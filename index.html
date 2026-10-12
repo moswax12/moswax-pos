@@ -3,486 +3,650 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<meta name="theme-color" content="#16213e">
+<meta name="theme-color" content="#0f172a">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<link rel="manifest" href="manifest.json">
 <title>Moswax POS</title>
 <style>
-:root{--bg:#0f0f1a;--bg2:#1a1a2e;--bg3:#16213e;--bg4:#1f2b47;--accent:#00d4ff;--accent2:#0099cc;--green:#00e676;--red:#ff5252;--orange:#ffab40;--text:#e8e8e8;--text2:#9aa;--radius:12px;--shadow:0 4px 20px rgba(0,0,0,.4)}
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);overflow:hidden;height:100vh;width:100vw}
-input,select,textarea,button{font-family:inherit;font-size:inherit}
-button{cursor:pointer;border:none;outline:none}
-input,select,textarea{outline:none;border:1px solid var(--bg4);background:var(--bg2);color:var(--text);padding:10px 14px;border-radius:8px;width:100%}
-input:focus,select:focus{border-color:var(--accent)}
-::-webkit-scrollbar{width:6px}::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
-#loginScreen{display:flex;align-items:center;justify-content:center;height:100vh;background:linear-gradient(135deg,#0f0f1a,#1a1a2e)}
-.login-box{background:var(--bg2);padding:40px 30px;border-radius:20px;width:90%;max-width:380px;box-shadow:var(--shadow);text-align:center}
-.login-box h1{color:var(--accent);font-size:28px;margin-bottom:6px}
-.login-box p{color:var(--text2);margin-bottom:24px;font-size:14px}
-.login-box input{margin-bottom:14px;text-align:center;font-size:16px}
-.login-box button{width:100%;padding:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#000;font-weight:700;font-size:16px;border-radius:10px}
-.login-box .err{color:var(--red);font-size:13px;margin-top:8px;min-height:20px}
-#appShell{display:none;height:100vh;flex-direction:column}
-.topbar{background:var(--bg2);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--bg4);min-height:52px}
-.topbar .brand{color:var(--accent);font-weight:800;font-size:18px}
-.topbar .user-info{font-size:12px;color:var(--text2);text-align:right}
-.topbar .user-info strong{color:var(--text);display:block}
-.main-area{display:flex;flex:1;overflow:hidden}
-.sidebar{width:200px;background:var(--bg2);border-right:1px solid var(--bg4);overflow-y:auto;padding:8px 0}
-.sidebar button{display:flex;align-items:center;gap:8px;padding:11px 16px;background:none;color:var(--text2);font-size:13px;width:100%;text-align:left}
-.sidebar button:hover,.sidebar button.active{background:var(--bg3);color:var(--accent)}
-.content{flex:1;overflow-y:auto;padding:16px;background:var(--bg)}
-.page{display:none}.page.active{display:block}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:16px}
-.card{background:var(--bg2);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
-.card .label{font-size:11px;color:var(--text2);margin-bottom:4px}
-.card .value{font-size:22px;font-weight:700;color:var(--accent)}
-.card .green{color:var(--green)}.card .red{color:var(--red)}.card .orange{color:var(--orange)}
-.tbl-wrap{overflow-x:auto;background:var(--bg2);border-radius:var(--radius)}
-table{width:100%;border-collapse:collapse;font-size:13px}
-th{background:var(--bg3);padding:10px;text-align:left;color:var(--text2);white-space:nowrap}
-td{padding:10px;border-top:1px solid var(--bg4);white-space:nowrap}
-.btn{padding:8px 14px;border-radius:8px;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:4px}
-.btn-primary{background:var(--accent);color:#000}
-.btn-success{background:var(--green);color:#000}
-.btn-danger{background:var(--red);color:#fff}
-.btn-warning{background:var(--orange);color:#000}
-.btn-outline{background:transparent;border:1px solid var(--accent);color:var(--accent)}
-.btn-sm{padding:5px 10px;font-size:12px}
-.btn-lg{padding:14px 24px;font-size:16px}
-.pos-layout{display:grid;grid-template-columns:1fr 360px;gap:12px;height:calc(100vh - 84px)}
-.pos-search{display:flex;gap:8px;margin-bottom:10px}
-.pos-search input{flex:1;font-size:15px;padding:10px}
-.pos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;overflow-y:auto;flex:1}
-.pos-item{background:var(--bg2);border-radius:10px;padding:12px 8px;text-align:center;cursor:pointer;border:2px solid transparent}
-.pos-item:hover{border-color:var(--accent)}
-.pos-item .name{font-size:12px;font-weight:600}.pos-item .price{color:var(--accent);font-weight:700;font-size:13px}.pos-item .stock{font-size:10px;color:var(--text2)}
-.pos-item.out{opacity:.35;pointer-events:none}
-.pos-cart{background:var(--bg2);border-radius:var(--radius);display:flex;flex-direction:column}
-.cart-header{padding:12px;border-bottom:1px solid var(--bg4);font-weight:700;display:flex;justify-content:space-between;align-items:center}
-.cart-items{flex:1;overflow-y:auto;padding:6px}
-.cart-row{display:flex;align-items:center;gap:6px;padding:6px;border-bottom:1px solid var(--bg4);font-size:13px}
-.cart-row .cname{flex:1}.cart-row .cqty{display:flex;align-items:center;gap:4px}
-.cart-row .cqty button{width:24px;height:24px;border-radius:6px;background:var(--bg3);color:var(--text);font-size:14px}
-.cart-row .ctotal{font-weight:700;color:var(--accent);min-width:55px;text-align:right}
-.cart-row .cremove{color:var(--red);cursor:pointer}
-.cart-footer{padding:12px;border-top:1px solid var(--bg4)}
-.cart-totals div{display:flex;justify-content:space-between;margin-bottom:3px;font-size:13px}
-.cart-totals .grand{font-size:18px;font-weight:800;color:var(--accent)}
-.cart-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
-.cart-actions button{padding:12px;border-radius:8px;font-weight:700}
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;display:none;align-items:center;justify-content:center;padding:16px}
-.modal-overlay.show{display:flex}
-.modal{background:var(--bg2);border-radius:16px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto}
-.modal-head{padding:16px;border-bottom:1px solid var(--bg4);display:flex;justify-content:space-between;align-items:center}
-.modal-head h3{font-size:17px}.modal-head .close{background:none;color:var(--text2);font-size:20px}
-.modal-body{padding:16px}.modal-body .field{margin-bottom:12px}
-.modal-body .field label{display:block;font-size:12px;color:var(--text2);margin-bottom:3px}
-.modal-foot{padding:12px 16px;border-top:1px solid var(--bg4);display:flex;gap:8px;justify-content:flex-end}
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.form-grid .full{grid-column:1/-1}
-.receipt{background:#fff;color:#000;padding:16px;font-family:'Courier New',monospace;font-size:11px;max-width:280px;margin:0 auto}
-.receipt h2{text-align:center;font-size:14px;margin-bottom:2px}
-.receipt .rc{text-align:center}.receipt .rl{border-top:1px dashed #000;margin:6px 0}
-.receipt table{width:100%}.receipt td{padding:1px 0}.receipt .rr{text-align:right}.receipt .rb{font-weight:700}
-.badge{padding:2px 7px;border-radius:20px;font-size:11px;font-weight:600}
-.badge-green{background:rgba(0,230,118,.15);color:var(--green)}
-.badge-red{background:rgba(255,82,82,.15);color:var(--red)}
-.badge-orange{background:rgba(255,171,64,.15);color:var(--orange)}
-.badge-blue{background:rgba(0,212,255,.15);color:var(--accent)}
-.alert-bar{padding:8px 14px;border-radius:8px;margin-bottom:12px;font-size:13px}
-.alert-warn{background:rgba(255,171,64,.12);color:var(--orange);border:1px solid rgba(255,171,64,.3)}
-.pay-methods{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
-.pay-method{padding:14px;background:var(--bg3);border-radius:10px;text-align:center;cursor:pointer;border:2px solid transparent}
-.pay-method.selected{border-color:var(--accent)}
-.pay-method .pm-icon{font-size:24px}.pay-method .pm-label{font-size:11px;font-weight:600}
-.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--bg3);color:var(--text);padding:10px 20px;border-radius:10px;font-size:13px;z-index:2000;opacity:0;transition:.3s;pointer-events:none}
-.toast.show{opacity:1}
-.settings-section{background:var(--bg2);border-radius:var(--radius);padding:16px;margin-bottom:14px}
-.settings-section h3{margin-bottom:12px;color:var(--accent);font-size:15px}
-.setting-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--bg4)}
-.bottom-nav{display:none;background:var(--bg2);border-top:1px solid var(--bg4);padding:4px 0}
-.bottom-nav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;background:none;color:var(--text2);font-size:9px;padding:4px}
-.bottom-nav button.active{color:var(--accent)}
-.bottom-nav button .icon{font-size:18px}
+:root{--bg:#0f172a;--b2:#1e293b;--b3:#334155;--b4:#475569;--ac:#38bdf8;--ac2:#0ea5e9;--gn:#22c55e;--rd:#ef4444;--or:#f59e0b;--tx:#f1f5f9;--tx2:#94a3b8}
+body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--tx);height:100dvh;overflow:hidden;font-size:14px}
+input,select,button{font-family:inherit;font-size:14px}
+button{cursor:pointer;border:none;background:none;color:inherit}
+input,select{background:var(--b2);border:1px solid var(--b3);color:var(--tx);padding:10px 12px;border-radius:8px;width:100%;outline:none}
+input:focus,select:focus{border-color:var(--ac)}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:var(--b3);border-radius:3px}
+
+/* LOGIN */
+#login{display:flex;align-items:center;justify-content:center;height:100dvh;background:linear-gradient(135deg,#0f172a,#1e293b)}
+.lb{background:var(--b2);padding:32px 24px;border-radius:16px;width:90%;max-width:340px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.5)}
+.lb h1{color:var(--ac);font-size:24px;margin-bottom:4px}
+.lb p{color:var(--tx2);font-size:13px;margin-bottom:20px}
+.lb input{margin-bottom:10px;text-align:center;font-size:15px}
+.lb .btn-login{width:100%;padding:13px;background:var(--ac);color:#000;font-weight:700;border-radius:10px;font-size:15px;margin-top:4px}
+.lb .err{color:var(--rd);font-size:12px;min-height:16px;margin-top:6px}
+
+/* APP */
+#app{display:none;height:100dvh;flex-direction:column}
+.topbar{background:var(--b2);padding:8px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--b3);min-height:48px}
+.topbar .logo{color:var(--ac);font-weight:800;font-size:16px}
+.topbar .right{display:flex;align-items:center;gap:8px}
+.topbar .uname{font-size:11px;color:var(--tx2);text-align:right;line-height:1.3}
+.topbar .uname b{color:var(--tx);display:block;font-size:12px}
+.mid{display:flex;flex:1;overflow:hidden}
+.side{width:180px;background:var(--b2);border-right:1px solid var(--b3);overflow-y:auto;padding:6px 0}
+.side button{display:flex;align-items:center;gap:8px;width:100%;padding:11px 14px;font-size:13px;color:var(--tx2);text-align:left}
+.side button.on{background:var(--b3);color:var(--ac);font-weight:600}
+.main{flex:1;overflow-y:auto;padding:14px;background:var(--bg)}
+.pg{display:none}.pg.on{display:block}
+
+/* BOTTOM NAV */
+.bnav{display:none;background:var(--b2);border-top:1px solid var(--b3);padding:2px 0 env(safe-area-inset-bottom)}
+.bnav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;padding:6px 2px;font-size:9px;color:var(--tx2)}
+.bnav button.on{color:var(--ac)}
+.bnav button span{font-size:18px}
+
+/* CARDS */
+.cds{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px}
+.cd{background:var(--b2);border-radius:10px;padding:14px}
+.cd .cl{font-size:11px;color:var(--tx2);margin-bottom:2px}
+.cd .cv{font-size:20px;font-weight:700;color:var(--ac)}
+.cd .g{color:var(--gn)}.cd .r{color:var(--rd)}.cd .o{color:var(--or)}
+
+/* TABLE */
+.tw{overflow-x:auto;background:var(--b2);border-radius:10px}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:var(--b3);padding:9px 10px;text-align:left;color:var(--tx2);white-space:nowrap;font-weight:600}
+td{padding:9px 10px;border-top:1px solid var(--b3);white-space:nowrap}
+
+/* BUTTONS */
+.btn{padding:8px 14px;border-radius:8px;font-weight:600;font-size:13px;display:inline-flex;align-items:center;gap:4px}
+.bp{background:var(--ac);color:#000}.bs{background:var(--gn);color:#000}
+.bd{background:var(--rd);color:#fff}.bw{background:var(--or);color:#000}
+.bo{border:1px solid var(--ac);color:var(--ac)}
+.sm{padding:4px 8px;font-size:11px}
+
+/* BADGE */
+.bg{padding:2px 7px;border-radius:12px;font-size:10px;font-weight:600}
+.bg-g{background:rgba(34,197,94,.15);color:var(--gn)}
+.bg-r{background:rgba(239,68,68,.15);color:var(--rd)}
+.bg-o{background:rgba(245,158,11,.15);color:var(--or)}
+.bg-b{background:rgba(56,189,248,.15);color:var(--ac)}
+
+/* ALERT */
+.al{padding:8px 12px;border-radius:8px;margin-bottom:10px;font-size:12px}
+.al-w{background:rgba(245,158,11,.1);color:var(--or);border:1px solid rgba(245,158,11,.2)}
+.al-g{background:rgba(34,197,94,.1);color:var(--gn);border:1px solid rgba(34,197,94,.2)}
+
+/* POS */
+.pos{display:grid;grid-template-columns:1fr 340px;gap:10px;height:calc(100dvh - 72px)}
+.psearch{display:flex;gap:6px;margin-bottom:8px}
+.psearch input{flex:1}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(105px,1fr));gap:6px;overflow-y:auto;flex:1}
+.pi{background:var(--b2);border-radius:8px;padding:10px 6px;text-align:center;cursor:pointer;border:2px solid transparent;transition:.15s}
+.pi:active{border-color:var(--ac)}
+.pi .pn{font-size:11px;font-weight:600}.pi .pp{color:var(--ac);font-weight:700;font-size:12px}.pi .ps{font-size:9px;color:var(--tx2)}
+.pi.out{opacity:.3;pointer-events:none}
+.cart{background:var(--b2);border-radius:10px;display:flex;flex-direction:column}
+.cart-h{padding:10px;border-bottom:1px solid var(--b3);font-weight:700;display:flex;justify-content:space-between;align-items:center;font-size:13px}
+.cart-i{flex:1;overflow-y:auto;padding:4px}
+.cr{display:flex;align-items:center;gap:4px;padding:5px 4px;border-bottom:1px solid var(--b3);font-size:12px}
+.cr .cn{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cr .cq{display:flex;align-items:center;gap:2px}
+.cr .cq button{width:22px;height:22px;border-radius:5px;background:var(--b3);font-size:14px;display:flex;align-items:center;justify-content:center}
+.cr .ct{font-weight:700;color:var(--ac);min-width:50px;text-align:right}
+.cr .cx{color:var(--rd);font-size:14px;padding:2px}
+.cart-f{padding:10px;border-top:1px solid var(--b3)}
+.ctot div{display:flex;justify-content:space-between;margin-bottom:2px;font-size:12px}
+.ctot .gt{font-size:17px;font-weight:800;color:var(--ac)}
+.cact{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
+.cact button{padding:11px;border-radius:8px;font-weight:700;font-size:13px}
+
+/* MODAL */
+.mo{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:1000;display:none;align-items:center;justify-content:center;padding:12px}
+.mo.sh{display:flex}
+.md{background:var(--b2);border-radius:14px;width:100%;max-width:460px;max-height:88dvh;overflow-y:auto}
+.mh{padding:14px;border-bottom:1px solid var(--b3);display:flex;justify-content:space-between;align-items:center}
+.mh h3{font-size:16px}.mh .x{font-size:20px;color:var(--tx2);padding:4px}
+.mb{padding:14px}.mb .f{margin-bottom:10px}
+.mb .f label{display:block;font-size:11px;color:var(--tx2);margin-bottom:3px}
+.mf{padding:10px 14px;border-top:1px solid var(--b3);display:flex;gap:6px;justify-content:flex-end}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.fg .fl{grid-column:1/-1}
+
+/* RECEIPT */
+.rcp{background:#fff;color:#000;padding:14px;font-family:monospace;font-size:11px;max-width:270px;margin:0 auto;border-radius:4px}
+.rcp h2{text-align:center;font-size:14px;margin-bottom:2px}
+.rcp .rc{text-align:center}.rcp .rl{border-top:1px dashed #000;margin:5px 0}
+.rcp table{width:100%}.rcp td{padding:1px 0}.rcp .rr{text-align:right}
+
+/* PAYMENT */
+.pms{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0}
+.pms div{padding:12px 6px;background:var(--b3);border-radius:8px;text-align:center;cursor:pointer;border:2px solid transparent}
+.pms div.sel{border-color:var(--ac);background:rgba(56,189,248,.1)}
+.pms .ic{font-size:22px}.pms .lb{font-size:10px;font-weight:600}
+
+/* SECTIONS */
+.sec{background:var(--b2);border-radius:10px;padding:14px;margin-bottom:12px}
+.sec h3{margin-bottom:10px;color:var(--ac);font-size:14px}
+.sr{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--b3)}
+.sr:last-child{border:none}
+
+/* PERMS TABLE */
+.perms{display:grid;grid-template-columns:repeat(6,1fr);gap:2px;font-size:11px;margin-top:8px}
+.perms div{padding:4px;text-align:center;background:var(--b3);border-radius:4px}
+.perms .hd{background:var(--b4);font-weight:600;color:var(--tx2)}
+.perms .on{background:rgba(34,197,94,.2);color:var(--gn)}
+.perms .off{background:rgba(239,68,68,.1);color:var(--rd)}
+
+/* TOAST */
+.toast{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:var(--b3);padding:10px 20px;border-radius:10px;font-size:13px;z-index:2000;opacity:0;transition:.3s;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,.4)}
+.toast.sh{opacity:1}
+
+/* TABS */
+.tabs{display:flex;gap:4px;margin-bottom:12px;overflow-x:auto;padding-bottom:4px}
+.tabs button{padding:7px 14px;background:var(--b2);color:var(--tx2);border-radius:8px 8px 0 0;font-size:12px;white-space:nowrap}
+.tabs button.on{background:var(--b3);color:var(--ac);font-weight:600}
+
 @media(max-width:768px){
-.sidebar{display:none}.bottom-nav{display:flex}
-.pos-layout{grid-template-columns:1fr;height:auto}.pos-cart{max-height:45vh}
-.form-grid{grid-template-columns:1fr}.content{padding:10px}.cards{grid-template-columns:repeat(2,1fr)}
+  .side{display:none}.bnav{display:flex}
+  .pos{grid-template-columns:1fr;height:auto}.cart{max-height:42dvh}
+  .fg{grid-template-columns:1fr}.main{padding:10px}
+  .cds{grid-template-columns:1fr 1fr}
+  .perms{grid-template-columns:repeat(4,1fr)}
 }
-@media print{body *{visibility:hidden}.receipt,.receipt *{visibility:visible}.receipt{position:absolute;left:0;top:0}}
+@media print{body *{visibility:hidden}.rcp,.rcp *{visibility:visible}.rcp{position:absolute;left:0;top:0}}
 </style>
 </head>
 <body>
-<div id="loginScreen">
-<div class="login-box">
-<h1>🏪 Moswax POS</h1>
-<p>Offline Point of Sale System</p>
-<input type="text" id="loginUser" placeholder="Username">
-<input type="password" id="loginPass" placeholder="Password">
-<button onclick="doLogin()">Sign In</button>
-<div class="err" id="loginErr"></div>
+
+<div id="login">
+  <div class="lb">
+    <h1>🏪 Moswax POS</h1>
+    <p>Offline Point of Sale</p>
+    <input id="lu" placeholder="Username" autocomplete="username">
+    <input id="lp" type="password" placeholder="Password" autocomplete="current-password">
+    <button class="btn-login" onclick="doLogin()">Sign In</button>
+    <div class="err" id="le"></div>
+  </div>
 </div>
+
+<div id="app">
+  <div class="topbar">
+    <div class="logo">🏪 Moswax POS</div>
+    <div class="right">
+      <div class="uname"><b id="tu">Admin</b><span id="tr">Admin</span></div>
+      <button class="bo sm" onclick="doLogout()">Logout</button>
+    </div>
+  </div>
+  <div class="mid">
+    <nav class="side" id="side"></nav>
+    <div class="main" id="mc"></div>
+  </div>
+  <nav class="bnav" id="bnav"></nav>
 </div>
-<div id="appShell">
-<div class="topbar">
-<div class="brand">🏪 Moswax POS</div>
-<div style="display:flex;align-items:center;gap:10px">
-<span id="shiftBadge" class="badge badge-orange">No Shift</span>
-<div class="user-info"><strong id="topUser">Admin</strong><span id="topRole">admin</span></div>
-<button class="btn btn-outline btn-sm" onclick="doLogout()">Logout</button>
-</div>
-</div>
-<div class="main-area">
-<nav class="sidebar" id="sidebar"></nav>
-<div class="content" id="contentArea"></div>
-</div>
-<nav class="bottom-nav" id="bottomNav"></nav>
-</div>
-<div class="modal-overlay" id="modalOverlay">
-<div class="modal">
-<div class="modal-head"><h3 id="modalTitle">Modal</h3><button class="close" onclick="closeModal()">✕</button></div>
-<div class="modal-body" id="modalBody"></div>
-<div class="modal-foot" id="modalFoot"></div>
-</div>
+
+<div class="mo" id="mo">
+  <div class="md">
+    <div class="mh"><h3 id="mt">Modal</h3><button class="x" onclick="cM()">✕</button></div>
+    <div class="mb" id="mbd"></div>
+    <div class="mf" id="mft"></div>
+  </div>
 </div>
 <div class="toast" id="toast"></div>
+
 <script>
-const DB='MoswaxPOS',DV=2;let db,CU=null,CS=null,cart=[];
-const ROLES={admin:{l:'Admin',p:['all']},gm:{l:'General Manager',p:['dashboard','pos','products','inventory','sales','reports','shifts','users','settings']},im:{l:'Inventory Manager',p:['dashboard','products','inventory','reports']},sup:{l:'Supervisor',p:['dashboard','pos','sales','reports','shifts']},cashier:{l:'Cashier',p:['pos','sales','shifts']}};
-function hp(p){if(!CU)return false;if(CU.role==='admin')return true;return(ROLES[CU.role]?.p||[]).includes(p)}
-function openDB(){return new Promise((y,n)=>{const r=indexedDB.open(DB,DV);r.onupgradeneeded=e=>{const d=e.target.result;['users','products','categories','sales','saleItems','payments','invLog','shifts','settings'].forEach(s=>{if(!d.objectStoreNames.contains(s))d.createObjectStore(s,{keyPath:'id',autoIncrement:true})})};r.onsuccess=e=>{db=e.target.result;y()};r.onerror=n})}
+/* ===== DB ===== */
+const DN='MoswaxPOS2';let db,CU=null,cart=[];
+const ROLES={
+  admin:{l:'Admin',p:{dashboard:1,pos:1,inventory:1,finance:1,users:1,settings:1}},
+  manager:{l:'Manager',p:{dashboard:1,pos:1,inventory:1,finance:1,users:0,settings:1}},
+  cashier:{l:'Cashier',p:{dashboard:1,pos:1,inventory:0,finance:0,users:0,settings:0}},
+  stock:{l:'Stock Keeper',p:{dashboard:1,pos:0,inventory:1,finance:0,users:0,settings:0}}
+};
+function hp(m){if(!CU)return false;return CU.role==='admin'||!!ROLES[CU.role]?.p[m]}
+function oDB(){return new Promise((y,n)=>{const r=indexedDB.open(DN,1);r.onupgradeneeded=e=>{const d=e.target.result;['users','products','categories','sales','saleItems','invLog','settings'].forEach(s=>{if(!d.objectStoreNames.contains(s))d.createObjectStore(s,{keyPath:'id',autoIncrement:true})})};r.onsuccess=e=>{db=e.target.result;y()};r.onerror=n})}
 function gA(s){return new Promise((y,n)=>{const r=db.transaction(s).objectStore(s).getAll();r.onsuccess=()=>y(r.result);r.onerror=n})}
 function gO(s,id){return new Promise((y,n)=>{const r=db.transaction(s).objectStore(s).get(id);r.onsuccess=()=>y(r.result);r.onerror=n})}
 function pO(s,d){return new Promise((y,n)=>{const r=db.transaction(s,'readwrite').objectStore(s).put(d);r.onsuccess=()=>y(r.result);r.onerror=n})}
 function aO(s,d){return new Promise((y,n)=>{const r=db.transaction(s,'readwrite').objectStore(s).add(d);r.onsuccess=()=>y(r.result);r.onerror=n})}
 function dO(s,id){return new Promise((y,n)=>{const r=db.transaction(s,'readwrite').objectStore(s).delete(id);r.onsuccess=()=>y();r.onerror=n})}
+
+/* ===== INIT ===== */
 async function init(){
-await openDB();
-let u=await gA('users');
-if(!u.length){
-await aO('users',{username:'admin',password:'admin123',name:'Administrator',role:'admin',active:true});
-await aO('categories',{name:'General'});
-await aO('settings',{storeName:'Moswax Shop',address:'',phone:'',taxRate:0,taxName:'Tax',receiptFooter:'Thank you for shopping!',currency:'$'});
+  try{
+    await oDB();
+    let u=await gA('users');
+    if(!u.length){
+      await aO('users',{username:'admin',password:'admin123',name:'Administrator',role:'admin',active:true});
+      await aO('categories',{name:'General'});
+      await aO('settings',{storeName:'Moswax Shop',address:'',phone:'',taxRate:0,taxName:'Tax',footer:'Thank you for shopping!',currency:'$'});
+    }
+    document.getElementById('lp').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
+  }catch(e){document.getElementById('le').textContent='DB Error'}
 }
-if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
-document.getElementById('loginPass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
-}
+
+/* ===== AUTH ===== */
 async function doLogin(){
-const u=document.getElementById('loginUser').value.trim();
-const p=document.getElementById('loginPass').value;
-const users=await gA('users');
-const f=users.find(x=>x.username===u&&x.password===p&&x.active);
-if(!f){document.getElementById('loginErr').textContent='Invalid credentials';return}
-CU=f;
-document.getElementById('loginScreen').style.display='none';
-document.getElementById('appShell').style.display='flex';
-document.getElementById('topUser').textContent=f.name;
-document.getElementById('topRole').textContent=ROLES[f.role]?.l||f.role;
-buildNav();nav('dashboard');
+  const u=document.getElementById('lu').value.trim(),p=document.getElementById('lp').value;
+  try{
+    const users=await gA('users');
+    const f=users.find(x=>x.username===u&&x.password===p&&x.active);
+    if(!f){document.getElementById('le').textContent='Invalid credentials';return}
+    CU=f;
+    document.getElementById('login').style.display='none';
+    document.getElementById('app').style.display='flex';
+    document.getElementById('tu').textContent=f.name;
+    document.getElementById('tr').textContent=ROLES[f.role]?.l||f.role;
+    buildNav();go('dashboard');
+  }catch(e){document.getElementById('le').textContent='Error: '+e.message}
 }
-function doLogout(){CU=null;CS=null;cart=[];document.getElementById('appShell').style.display='none';document.getElementById('loginScreen').style.display='flex';document.getElementById('loginUser').value='';document.getElementById('loginPass').value='';document.getElementById('loginErr').textContent=''}
-const NAV=[{id:'dashboard',i:'📊',l:'Dashboard',p:'dashboard'},{id:'pos',i:'🛒',l:'POS',p:'pos'},{id:'products',i:'📦',l:'Products',p:'products'},{id:'inventory',i:'📋',l:'Inventory',p:'inventory'},{id:'sales',i:'💰',l:'Sales',p:'sales'},{id:'reports',i:'📈',l:'Reports',p:'reports'},{id:'users',i:'👥',l:'Users',p:'users'},{id:'shifts',i:'⏰',l:'Shifts',p:'shifts'},{id:'settings',i:'⚙️',l:'Settings',p:'settings'},{id:'backup',i:'💾',l:'Backup',p:'settings'}];
+function doLogout(){CU=null;cart=[];document.getElementById('app').style.display='none';document.getElementById('login').style.display='flex';document.getElementById('lu').value='';document.getElementById('lp').value='';document.getElementById('le').textContent=''}
+
+/* ===== NAV ===== */
+const NAV=[
+  {id:'dashboard',i:'📊',l:'Dashboard'},
+  {id:'pos',i:'🛒',l:'POS'},
+  {id:'inventory',i:'📦',l:'Inventory'},
+  {id:'finance',i:'💰',l:'Finance'},
+  {id:'users',i:'👥',l:'Users'},
+  {id:'settings',i:'⚙️',l:'Settings'}
+];
 function buildNav(){
-const sb=document.getElementById('sidebar'),bn=document.getElementById('bottomNav');sb.innerHTML='';bn.innerHTML='';
-const mob=['dashboard','pos','products','sales','settings'];
-NAV.forEach(n=>{if(!hp(n.p))return;
-let b=document.createElement('button');b.innerHTML=n.i+' '+n.l;b.onclick=()=>nav(n.id);b.dataset.page=n.id;sb.appendChild(b);
-if(mob.includes(n.id)){let m=document.createElement('button');m.innerHTML='<span class="icon">'+n.i+'</span>'+n.l;m.onclick=()=>nav(n.id);m.dataset.page=n.id;bn.appendChild(m)}
-})}
-function nav(page){
-if(!hp(page))return;
-document.querySelectorAll('.sidebar button,.bottom-nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===page));
-const c=document.getElementById('contentArea');c.innerHTML='<div class="page active" id="pg"></div>';
-const el=document.getElementById('pg');
-({dashboard:rDash,pos:rPOS,products:rProd,inventory:rInv,sales:rSales,reports:rReports,users:rUsers,shifts:rShifts,settings:rSettings,backup:rBackup})[page]?.(el);
+  const s=document.getElementById('side'),b=document.getElementById('bnav');
+  s.innerHTML='';b.innerHTML='';
+  NAV.forEach(n=>{
+    if(!hp(n.id))return;
+    let e=document.createElement('button');
+    e.textContent=n.i+' '+n.l;e.onclick=()=>go(n.id);e.dataset.p=n.id;s.appendChild(e);
+    let e2=document.createElement('button');
+    e2.innerHTML='<span>'+n.i+'</span>'+n.l;e2.onclick=()=>go(n.id);e2.dataset.p=n.id;b.appendChild(e2);
+  });
 }
-function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
-function oM(title,body,foot=''){document.getElementById('modalTitle').textContent=title;document.getElementById('modalBody').innerHTML=body;document.getElementById('modalFoot').innerHTML=foot;document.getElementById('modalOverlay').classList.add('show')}
-function closeModal(){document.getElementById('modalOverlay').classList.remove('show')}
+function go(p){
+  if(!hp(p))return;
+  document.querySelectorAll('.side button,.bnav button').forEach(b=>b.classList.toggle('on',b.dataset.p===p));
+  document.getElementById('mc').innerHTML='<div class="pg on" id="pg"></div>';
+  const el=document.getElementById('pg');
+  ({dashboard:rDash,pos:rPOS,inventory:rInv,finance:rFin,users:rUsr,settings:rSet})[p]?.(el);
+}
+
+/* ===== HELPERS ===== */
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('sh');setTimeout(()=>t.classList.remove('sh'),2500)}
+function oM(t,b,f=''){document.getElementById('mt').textContent=t;document.getElementById('mbd').innerHTML=b;document.getElementById('mft').innerHTML=f;document.getElementById('mo').classList.add('sh')}
+function cM(){document.getElementById('mo').classList.remove('sh')}
 function fmt(n){return'$'+Number(n||0).toFixed(2)}
-function fD(d){if(!d)return'-';return new Date(d).toLocaleString()}
-function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+function fD(d){return d?new Date(d).toLocaleString():'-'}
+function fDs(d){return d?new Date(d).toLocaleDateString():'-'}
 
+/* ===== DASHBOARD ===== */
 async function rDash(el){
-const sales=await gA('sales'),prods=await gA('products');
-const td=new Date().toDateString();
-const ts=sales.filter(s=>new Date(s.date).toDateString()===td);
-const rev=ts.reduce((a,s)=>a+s.total,0);
-const low=prods.filter(p=>p.stock>0&&p.stock<=p.reorder);
-const out=prods.filter(p=>p.stock<=0);
-el.innerHTML='<h2 style="margin-bottom:14px">📊 Dashboard</h2>'
-+(out.length?'<div class="alert-bar alert-warn">⚠️ '+out.length+' product(s) out of stock</div>':'')
-+(low.length?'<div class="alert-bar alert-warn">📉 '+low.length+' product(s) low stock</div>':'')
-+'<div class="cards">'
-+'<div class="card"><div class="label">Today Sales</div><div class="value green">'+fmt(rev)+'</div></div>'
-+'<div class="card"><div class="label">Transactions</div><div class="value">'+ts.length+'</div></div>'
-+'<div class="card"><div class="label">Products</div><div class="value">'+prods.length+'</div></div>'
-+'<div class="card"><div class="label">Low Stock</div><div class="value orange">'+low.length+'</div></div></div>'
-+'<h3 style="margin:12px 0 8px">Recent Sales</h3><div class="tbl-wrap"><table><tr><th>Receipt</th><th>Date</th><th>Cashier</th><th>Total</th><th>Pay</th></tr>'
-+ts.slice(-10).reverse().map(s=>'<tr><td>'+s.receiptNo+'</td><td>'+fD(s.date)+'</td><td>'+s.cashier+'</td><td>'+fmt(s.total)+'</td><td><span class="badge badge-blue">'+s.payMethod+'</span></td></tr>').join('')
-+(!ts.length?'<tr><td colspan="5" style="text-align:center;color:var(--text2)">No sales today</td></tr>':'')
-+'</table></div>';
+  const sa=await gA('sales'),pr=await gA('products');
+  const td=new Date().toDateString();
+  const ts=sa.filter(s=>new Date(s.date).toDateString()===td);
+  const rv=ts.reduce((a,s)=>a+s.total,0);
+  const lo=pr.filter(p=>p.stock>0&&p.stock<=p.reorder);
+  const ou=pr.filter(p=>p.stock<=0);
+  const mNow=new Date();
+  const mRev=sa.filter(s=>{const d=new Date(s.date);return d.getMonth()===mNow.getMonth()&&d.getFullYear()===mNow.getFullYear()}).reduce((a,s)=>a+s.total,0);
+  el.innerHTML=`<h2 style="margin-bottom:12px">📊 Dashboard</h2>
+    ${ou.length?'<div class="al al-w">⚠️ '+ou.length+' product(s) out of stock</div>':''}
+    ${lo.length?'<div class="al al-w">📉 '+lo.length+' product(s) low stock</div>':''}
+    <div class="cds">
+      <div class="cd"><div class="cl">Today's Sales</div><div class="cv g">${fmt(rv)}</div></div>
+      <div class="cd"><div class="cl">Today's Orders</div><div class="cv">${ts.length}</div></div>
+      <div class="cd"><div class="cl">This Month</div><div class="cv">${fmt(mRev)}</div></div>
+      <div class="cd"><div class="cl">Products</div><div class="cv">${pr.length}</div></div>
+    </div>
+    <h3 style="margin:10px 0 6px">Recent Transactions</h3>
+    <div class="tw"><table><tr><th>Receipt</th><th>Date</th><th>Cashier</th><th>Total</th><th>Payment</th></tr>
+    ${ts.slice(-8).reverse().map(s=>'<tr><td>'+s.rn+'</td><td>'+fD(s.date)+'</td><td>'+s.cashier+'</td><td><b>'+fmt(s.total)+'</b></td><td><span class="bg bg-b">'+s.pm+'</span></td></tr>').join('')}
+    ${!ts.length?'<tr><td colspan="5" style="text-align:center;color:var(--tx2);padding:20px">No sales today</td></tr>':''}
+    </table></div>`;
 }
 
+/* ===== POS ===== */
 async function rPOS(el){
-if(!CS){el.innerHTML='<div style="text-align:center;padding:60px 20px"><h2>⏰ No Active Shift</h2><p style="color:var(--text2);margin:12px 0">Open a shift first.</p><button class="btn btn-primary btn-lg" onclick="nav(\'shifts\')">Go to Shifts</button></div>';return}
-const prods=await gA('products'),cats=await gA('categories'),sets=await gA('settings');
-const tx=sets[0]?.taxRate||0;
-el.innerHTML='<div class="pos-layout"><div style="display:flex;flex-direction:column;overflow:hidden">'
-+'<div class="pos-search"><input type="text" id="posS" placeholder="🔍 Search / scan barcode..." oninput="fPOS()"><select id="posC" onchange="fPOS()" style="width:130px"><option value="">All</option>'+cats.map(c=>'<option value="'+c.id+'">'+c.name+'</option>').join('')+'</select></div>'
-+'<div class="pos-grid" id="posG">'+prods.map(p=>'<div class="pos-item '+(p.stock<=0?'out':'')+'" onclick="aTC('+p.id+')" data-n="'+p.name.toLowerCase()+'" data-b="'+(p.barcode||'')+'" data-c="'+p.categoryId+'"><div class="name">'+p.name+'</div><div class="price">'+fmt(p.price)+'</div><div class="stock">Stock:'+p.stock+'</div></div>').join('')+'</div></div>'
-+'<div class="pos-cart"><div class="cart-header"><span>🛒 Cart ('+cart.length+')</span><div style="display:flex;gap:4px"><button class="btn btn-outline btn-sm" onclick="sHeld()">Held</button><button class="btn btn-warning btn-sm" onclick="hSale()">Hold</button></div></div>'
-+'<div class="cart-items" id="cI">'+rCI()+'</div>'
-+'<div class="cart-footer"><div class="cart-totals"><div><span>Subtotal</span><span id="cSub">'+fmt(cart.reduce((a,c)=>a+c.price*c.qty,0))+'</span></div><div><span>Tax ('+tx+'%)</span><span id="cTax">'+fmt(cart.reduce((a,c)=>a+c.price*c.qty,0)*tx/100)+'</span></div><div class="grand"><span>Total</span><span id="cTot">'+fmt(cart.reduce((a,c)=>a+c.price*c.qty,0)*(1+tx/100))+'</span></div></div>'
-+'<div class="cart-actions"><button class="btn btn-danger" onclick="cart=[];uCU()">Clear</button><button class="btn btn-success" onclick="oPay()" '+(cart.length?'':'disabled style="opacity:.4"')+'>💳 Pay</button></div></div></div></div>';
+  const pr=await gA('products'),ca=await gA('categories'),se=await gA('settings');
+  const tx=se[0]?.taxRate||0;
+  el.innerHTML=`<div class="pos">
+    <div style="display:flex;flex-direction:column;overflow:hidden">
+      <div class="psearch">
+        <input id="ps" placeholder="🔍 Search / scan barcode..." oninput="fP()">
+        <select id="pc" onchange="fP()" style="width:110px"><option value="">All</option>${ca.map(c=>'<option value="'+c.id+'">'+c.name+'</option>').join('')}</select>
+      </div>
+      <div class="pgrid" id="pgr">${pr.map(p=>'<div class="pi '+(p.stock<=0?'out':'')+'" onclick="aC('+p.id+')" data-n="'+p.name.toLowerCase()+'" data-b="'+(p.barcode||'')+'" data-c="'+p.catId+'"><div class="pn">'+p.name+'</div><div class="pp">'+fmt(p.price)+'</div><div class="ps">Stock: '+p.stock+'</div></div>').join('')}</div>
+    </div>
+    <div class="cart">
+      <div class="cart-h"><span>🛒 Cart (${cart.length})</span>
+        <div style="display:flex;gap:4px">
+          <button class="bo sm" onclick="sH()">Held</button>
+          <button class="bw sm" onclick="hS()">Hold</button>
+        </div>
+      </div>
+      <div class="cart-i" id="ci">${rCI()}</div>
+      <div class="cart-f">
+        <div class="ctot">
+          <div><span>Subtotal</span><span id="cS">${fmt(cart.reduce((a,c)=>a+c.price*c.qty,0))}</span></div>
+          <div><span>${se[0]?.taxName||'Tax'} (${tx}%)</span><span id="cT">${fmt(cart.reduce((a,c)=>a+c.price*c.qty,0)*tx/100)}</span></div>
+          <div class="gt"><span>Total</span><span id="cTo">${fmt(cart.reduce((a,c)=>a+c.price*c.qty,0)*(1+tx/100))}</span></div>
+        </div>
+        <div class="cact">
+          <button class="bd" onclick="cart=[];uC()">Clear</button>
+          <button class="bs" onclick="oPay()" ${cart.length?'':'disabled style="opacity:.4"'}>💳 Pay</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
 }
-function rCI(){return cart.map((c,i)=>'<div class="cart-row"><span class="cname">'+c.name+'</span><div class="cqty"><button onclick="cQ('+i+',-1)">−</button><span>'+c.qty+'</span><button onclick="cQ('+i+',1)">+</button></div><span class="ctotal">'+fmt(c.price*c.qty)+'</span><span class="cremove" onclick="cart.splice('+i+',1);uCU()">✕</span></div>').join('')||'<div style="text-align:center;padding:20px;color:var(--text2)">Empty</div>'}
-function uCU(){
-const ci=document.getElementById('cI');if(!ci)return;ci.innerHTML=rCI();
-const sets=JSON.parse(localStorage.getItem('mx_s')||'{}');const tx=sets.taxRate||0;
-const sub=cart.reduce((a,c)=>a+c.price*c.qty,0);
-document.getElementById('cSub').textContent=fmt(sub);
-document.getElementById('cTax').textContent=fmt(sub*tx/100);
-document.getElementById('cTot').textContent=fmt(sub*(1+tx/100));
-document.querySelector('.cart-header span').textContent='🛒 Cart ('+cart.length+')';
+function rCI(){
+  return cart.map((c,i)=>`<div class="cr">
+    <span class="cn">${c.name}</span>
+    <div class="cq"><button onclick="cQ(${i},-1)">−</button><span>${c.qty}</span><button onclick="cQ(${i},1)">+</button></div>
+    <span class="ct">${fmt(c.price*c.qty)}</span>
+    <span class="cx" onclick="cart.splice(${i},1);uC()">✕</span>
+  </div>`).join('')||'<div style="text-align:center;padding:20px;color:var(--tx2)">Cart is empty</div>';
 }
-async function aTC(pid){
-const p=await gO('products',pid);if(!p||p.stock<=0)return toast('Out of stock!');
-const e=cart.find(c=>c.pid===pid);
-if(e){if(e.qty>=p.stock)return toast('Max stock');e.qty++}
-else cart.push({pid:pid,name:p.name,price:p.price,qty:1,mx:p.stock});
-uCU();
+function uC(){
+  const e=document.getElementById('ci');if(!e)return;e.innerHTML=rCI();
+  const se=JSON.parse(localStorage.getItem('mx_s')||'{}'),tx=se.taxRate||0;
+  const sub=cart.reduce((a,c)=>a+c.price*c.qty,0);
+  document.getElementById('cS').textContent=fmt(sub);
+  document.getElementById('cT').textContent=fmt(sub*tx/100);
+  document.getElementById('cTo').textContent=fmt(sub*(1+tx/100));
+  document.querySelector('.cart-h span').textContent='🛒 Cart ('+cart.length+')';
 }
-function cQ(i,d){cart[i].qty+=d;if(cart[i].qty<=0)cart.splice(i,1);if(cart[i]&&cart[i].qty>cart[i].mx){cart[i].qty=cart[i].mx;toast('Max stock')}uCU()}
-function fPOS(){const q=document.getElementById('posS').value.toLowerCase(),c=document.getElementById('posC').value;document.querySelectorAll('.pos-item').forEach(e=>{e.style.display=(e.dataset.n.includes(q)||e.dataset.b.includes(q))&&(!c||e.dataset.c===c)?'':'none'})}
-function hSale(){if(!cart.length)return toast('Empty');const h=JSON.parse(localStorage.getItem('mx_h')||'[]');h.push({id:uid(),items:[...cart],date:new Date().toISOString(),user:CU.name});localStorage.setItem('mx_h',JSON.stringify(h));cart=[];uCU();toast('Held')}
-function sHeld(){const h=JSON.parse(localStorage.getItem('mx_h')||'[]');if(!h.length)return toast('None');oM('Held Sales',h.map(x=>'<div style="display:flex;justify-content:space-between;align-items:center;padding:8px;border-bottom:1px solid var(--bg4)"><div><strong>'+x.items.length+' items</strong><br><small style="color:var(--text2)">'+fD(x.date)+'</small></div><div style="display:flex;gap:4px"><button class="btn btn-primary btn-sm" onclick="rSale(\''+x.id+'\')">Resume</button><button class="btn btn-danger btn-sm" onclick="dHeld(\''+x.id+'\')">Del</button></div></div>').join(''))}
-function rSale(id){const h=JSON.parse(localStorage.getItem('mx_h')||'[]');const x=h.find(a=>a.id===id);if(x){cart=x.items;uCU()}localStorage.setItem('mx_h',JSON.stringify(h.filter(a=>a.id!==id)));closeModal();toast('Resumed')}
-function dHeld(id){const h=JSON.parse(localStorage.getItem('mx_h')||'[]');localStorage.setItem('mx_h',JSON.stringify(h.filter(a=>a.id!==id)));closeModal();sHeld()}
+async function aC(pid){
+  const p=await gO('products',pid);if(!p||p.stock<=0)return toast('Out of stock!');
+  const e=cart.find(c=>c.pid===pid);
+  if(e){if(e.qty>=p.stock)return toast('Max stock reached');e.qty++}
+  else cart.push({pid,name:p.name,price:p.price,qty:1,mx:p.stock});
+  uC();
+}
+function cQ(i,d){cart[i].qty+=d;if(cart[i].qty<=0)cart.splice(i,1);if(cart[i]&&cart[i].qty>cart[i].mx){cart[i].qty=cart[i].mx;toast('Max stock')}uC()}
+function fP(){const q=document.getElementById('ps').value.toLowerCase(),c=document.getElementById('pc').value;document.querySelectorAll('.pi').forEach(e=>{e.style.display=(e.dataset.n.includes(q)||e.dataset.b.includes(q))&&(!c||e.dataset.c===c)?'':'none'})}
+function hS(){if(!cart.length)return toast('Cart empty');const h=JSON.parse(localStorage.getItem('mx_h')||'[]');h.push({id:Date.now().toString(36),items:[...cart],date:new Date().toISOString(),user:CU.name});localStorage.setItem('mx_h',JSON.stringify(h));cart=[];uC();toast('Sale held')}
+function sH(){const h=JSON.parse(localStorage.getItem('mx_h')||'[]');if(!h.length)return toast('No held sales');oM('Held Sales',h.map(x=>'<div style="display:flex;justify-content:space-between;align-items:center;padding:8px;border-bottom:1px solid var(--b3)"><div><b>'+x.items.length+' items</b><br><small style="color:var(--tx2)">'+fD(x.date)+' - '+x.user+'</small></div><div style="display:flex;gap:4px"><button class="bp sm" onclick="rS(\''+x.id+'\')">Resume</button><button class="bd sm" onclick="dH(\''+x.id+'\')">Del</button></div></div>').join(''))}
+function rS(id){const h=JSON.parse(localStorage.getItem('mx_h')||'[]'),x=h.find(a=>a.id===id);if(x){cart=x.items;uC()}localStorage.setItem('mx_h',JSON.stringify(h.filter(a=>a.id!==id)));cM();toast('Resumed')}
+function dH(id){const h=JSON.parse(localStorage.getItem('mx_h')||'[]');localStorage.setItem('mx_h',JSON.stringify(h.filter(a=>a.id!==id)));cM();sH()}
 
 async function oPay(){
-if(!cart.length)return;
-const sets=await gA('settings');const tx=sets[0]?.taxRate||0;
-const sub=cart.reduce((a,c)=>a+c.price*c.qty,0);const total=sub*(1+tx/100);
-window._pm='cash';
-oM('💳 Payment',
-'<div style="text-align:center;margin-bottom:12px"><div style="font-size:13px;color:var(--text2)">Total</div><div style="font-size:32px;font-weight:800;color:var(--accent)">'+fmt(total)+'</div></div>'
-+'<div class="pay-methods"><div class="pay-method selected" onclick="sPM(this,\'cash\')"><div class="pm-icon">💵</div><div class="pm-label">Cash</div></div><div class="pay-method" onclick="sPM(this,\'card\')"><div class="pm-icon">💳</div><div class="pm-label">Card</div></div><div class="pay-method" onclick="sPM(this,\'mobile\')"><div class="pm-icon">📱</div><div class="pm-label">Mobile</div></div></div>'
-+'<div id="cashSec"><div class="field"><label>Amount Received</label><input type="number" id="aRcv" value="'+total.toFixed(2)+'" oninput="document.getElementById(\'chgD\').textContent=\'Change: '+fmt(0)+'\'"></div><div style="text-align:center;font-size:18px;font-weight:700;color:var(--green)" id="chgD">Change: '+fmt(0)+'</div></div>'
-+'<div class="field" style="margin-top:10px"><label>Customer (optional)</label><input type="text" id="pCust" placeholder="Walk-in"></div>',
-'<button class="btn btn-success btn-lg" style="width:100%" onclick="cSale('+total+')">✅ Complete Sale</button>');
+  if(!cart.length)return;
+  const se=await gA('settings'),tx=se[0]?.taxRate||0;
+  const sub=cart.reduce((a,c)=>a+c.price*c.qty,0),tot=sub*(1+tx/100);
+  window._pm='Cash';
+  oM('💳 Payment',`
+    <div style="text-align:center;margin-bottom:10px"><div style="font-size:12px;color:var(--tx2)">Total Amount</div><div style="font-size:30px;font-weight:800;color:var(--ac)">${fmt(tot)}</div></div>
+    <div class="pms">
+      <div class="sel" onclick="sPM(this,'Cash')"><div class="ic">💵</div><div class="lb">Cash</div></div>
+      <div onclick="sPM(this,'Card')"><div class="ic">💳</div><div class="lb">Card</div></div>
+      <div onclick="sPM(this,'Mobile')"><div class="ic">📱</div><div class="lb">Mobile</div></div>
+    </div>
+    <div id="cs"><div class="f"><label>Amount Received</label><input type="number" id="ar" value="${tot.toFixed(2)}" oninput="document.getElementById('cd').textContent='Change: '+fmt(Math.max(0,parseFloat(this.value||0)-${tot}))"></div>
+    <div style="text-align:center;font-size:16px;font-weight:700;color:var(--gn)" id="cd">Change: ${fmt(0)}</div></div>
+    <div class="f" style="margin-top:8px"><label>Customer (optional)</label><input id="pcu" placeholder="Walk-in"></div>`,
+    '<button class="bs" style="width:100%;padding:12px;font-size:15px" onclick="cSa('+tot+')">✅ Complete Sale</button>');
 }
-function sPM(el,m){document.querySelectorAll('.pay-method').forEach(e=>e.classList.remove('selected'));el.classList.add('selected');window._pm=m;document.getElementById('cashSec').style.display=m==='cash'?'block':'none'}
-async function cSale(total){
-const sets=await gA('settings');const tx=sets[0]?.taxRate||0;
-const sub=cart.reduce((a,c)=>a+c.price*c.qty,0);
-const rn='RCP-'+Date.now().toString(36).toUpperCase();
-const cust=document.getElementById('pCust')?.value||'Walk-in';
-let pm=window._pm;if(pm==='card')pm='Card (External)';
-const sid=await aO('sales',{receiptNo:rn,date:new Date().toISOString(),cashier:CU.name,customer:cust,subtotal:sub,tax:sub*tx/100,total:total,payMethod:pm,shiftId:CS?.id,itemCount:cart.length});
-for(const c of cart){
-await aO('saleItems',{saleId:sid,productId:c.pid,name:c.name,price:c.price,qty:c.qty,total:c.price*c.qty});
-const p=await gO('products',c.pid);if(p){p.stock=Math.max(0,p.stock-c.qty);await pO('products',p)}
-await aO('invLog',{productId:c.pid,productName:c.name,type:'sale',qty:-c.qty,date:new Date().toISOString(),user:CU.name,ref:rn});
-}
-await aO('payments',{saleId:sid,method:pm,amount:total,date:new Date().toISOString()});
-cart=[];closeModal();toast('✅ Sale complete!');showRcpt({id:sid,receiptNo:rn,date:new Date().toISOString(),cashier:CU.name,customer:cust,subtotal:sub,tax:sub*tx/100,total:total,payMethod:pm});nav('pos');
-}
-async function showRcpt(sale){
-const sets=await gA('settings');const s=sets[0]||{};
-const items=(await gA('saleItems')).filter(i=>i.saleId===sale.id);
-const h='<div class="receipt" id="rcptC"><h2>'+(s.storeName||'Moswax Shop')+'</h2><div class="rc">'+(s.address||'')+'<br>'+(s.phone||'')+'</div><div class="rl"></div>'
-+'<div>Receipt: '+sale.receiptNo+'</div><div>Date: '+fD(sale.date)+'</div><div>Cashier: '+sale.cashier+'</div>'
-+(sale.customer&&sale.customer!=='Walk-in'?'<div>Customer: '+sale.customer+'</div>':'')
-+'<div class="rl"></div><table><tr><td><b>Item</b></td><td class="rr"><b>Qty</b></td><td class="rr"><b>Price</b></td><td class="rr"><b>Total</b></td></tr>'
-+items.map(i=>'<tr><td>'+i.name+'</td><td class="rr">'+i.qty+'</td><td class="rr">'+fmt(i.price)+'</td><td class="rr">'+fmt(i.total)+'</td></tr>').join('')
-+'</table><div class="rl"></div>'
-+'<div style="display:flex;justify-content:space-between"><span>Subtotal</span><span>'+fmt(sale.subtotal)+'</span></div>'
-+(sale.tax>0?'<div style="display:flex;justify-content:space-between"><span>'+(s.taxName||'Tax')+'</span><span>'+fmt(sale.tax)+'</span></div>':'')
-+'<div style="display:flex;justify-content:space-between;font-size:14px" class="rb"><span>TOTAL</span><span>'+fmt(sale.total)+'</span></div>'
-+'<div style="display:flex;justify-content:space-between"><span>Payment</span><span>'+sale.payMethod+'</span></div>'
-+'<div class="rl"></div><div class="rc" style="margin-top:6px">'+(s.receiptFooter||'Thank you!')+'</div><div class="rc" style="font-size:9px;margin-top:6px">Moswax POS</div></div>'
-+'<div style="text-align:center;margin-top:12px;display:flex;gap:6px;justify-content:center"><button class="btn btn-primary" onclick="pRcpt()">🖨️ Print</button><button class="btn btn-outline" onclick="shRcpt()">📤 Share</button><button class="btn btn-outline" onclick="closeModal()">Close</button></div>';
-oM('🧾 Receipt',h);
-}
-function pRcpt(){const c=document.getElementById('rcptC');if(!c)return;const w=window.open('','','width=320,height=500');w.document.write('<html><head><style>body{font-family:Courier New,monospace;font-size:11px;padding:8px;max-width:280px;margin:0 auto}.rc{text-align:center}.rr{text-align:right}.rb{font-weight:700}.rl{border-top:1px dashed #000;margin:6px 0}table{width:100%}td{padding:1px 0}h2{margin:0 0 4px;font-size:14px}</style></head><body>'+c.innerHTML+'</body></html>');w.document.close();w.print()}
-function shRcpt(){const c=document.getElementById('rcptC');if(!c)return;if(navigator.share)navigator.share({title:'Receipt',text:c.innerText}).catch(()=>{});else{navigator.clipboard?.writeText(c.innerText);toast('Copied!')}}
+function sPM(el,m){document.querySelectorAll('.pms div').forEach(e=>e.classList.remove('sel'));el.classList.add('sel');window._pm=m;document.getElementById('cs').style.display=m==='Cash'?'block':'none'}
 
-async function rProd(el){
-const prods=await gA('products'),cats=await gA('categories');
-const cm={};cats.forEach(c=>cm[c.id]=c.name);
-el.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:6px"><h2>📦 Products ('+prods.length+')</h2><div style="display:flex;gap:6px"><button class="btn btn-primary" onclick="oPF()">+ Add</button><button class="btn btn-outline" onclick="oCM()">Categories</button></div></div>'
-+'<div style="margin-bottom:10px"><input placeholder="🔍 Search..." oninput="document.querySelectorAll(\'#pT tr[data-s]\').forEach(r=>r.style.display=r.dataset.s.includes(this.value.toLowerCase())?\'\':\'none\')"></div>'
-+'<div class="tbl-wrap"><table id="pT"><tr><th>SKU</th><th>Barcode</th><th>Name</th><th>Category</th><th>Cost</th><th>Price</th><th>Stock</th><th>Actions</th></tr>'
-+prods.map(p=>'<tr data-s="'+(p.name+' '+(p.barcode||'')+' '+(p.sku||'')).toLowerCase()+'"><td>'+(p.sku||'-')+'</td><td>'+(p.barcode||'-')+'</td><td><strong>'+p.name+'</strong></td><td>'+(cm[p.categoryId]||'-')+'</td><td>'+fmt(p.cost)+'</td><td>'+fmt(p.price)+'</td><td>'+(p.stock<=0?'<span class="badge badge-red">0</span>':p.stock<=p.reorder?'<span class="badge badge-orange">'+p.stock+'</span>':'<span class="badge badge-green">'+p.stock+'</span>')+'</td><td><button class="btn btn-outline btn-sm" onclick="oPF('+p.id+')">Edit</button> <button class="btn btn-danger btn-sm" onclick="dP('+p.id+')">Del</button></td></tr>').join('')
-+'</table></div>';
+async function cSa(tot){
+  const se=await gA('settings'),tx=se[0]?.taxRate||0;
+  const sub=cart.reduce((a,c)=>a+c.price*c.qty,0);
+  const rn='RCP-'+Date.now().toString(36).toUpperCase();
+  const cu=document.getElementById('pcu')?.value||'Walk-in';
+  let pm=window._pm;if(pm==='Card')pm='Card (External)';
+  const sid=await aO('sales',{rn,date:new Date().toISOString(),cashier:CU.name,customer:cu,subtotal:sub,tax:sub*tx/100,total:tot,pm,ic:cart.length});
+  for(const c of cart){
+    await aO('saleItems',{saleId:sid,productId:c.pid,name:c.name,price:c.price,qty:c.qty,total:c.price*c.qty});
+    const p=await gO('products',c.pid);if(p){p.stock=Math.max(0,p.stock-c.qty);await pO('products',p)}
+    await aO('invLog',{productId:c.pid,pn:c.name,type:'sale',qty:-c.qty,date:new Date().toISOString(),user:CU.name,ref:rn});
+  }
+  const sale={id:sid,rn,date:new Date().toISOString(),cashier:CU.name,customer:cu,subtotal:sub,tax:sub*tx/100,total:tot,pm};
+  cart=[];cM();toast('✅ Sale complete!');shR(sale);go('pos');
 }
-async function oPF(id){
-const cats=await gA('categories');let p={name:'',sku:'',barcode:'',categoryId:cats[0]?.id||'',cost:0,price:0,stock:0,reorder:5};
-if(id){p=await gO('products',id);if(!p)return}
-oM(id?'Edit Product':'Add Product',
-'<div class="form-grid"><div class="field full"><label>Name *</label><input id="pN" value="'+p.name+'"></div><div class="field"><label>SKU</label><input id="pSk" value="'+(p.sku||'')+'"></div><div class="field"><label>Barcode</label><input id="pB" value="'+(p.barcode||'')+'"></div><div class="field"><label>Category</label><select id="pCt">'+cats.map(c=>'<option value="'+c.id+'"'+(c.id===p.categoryId?' selected':'')+'>'+c.name+'</option>').join('')+'</select></div><div class="field"><label>Cost</label><input type="number" id="pCo" value="'+p.cost+'" step="0.01"></div><div class="field"><label>Price *</label><input type="number" id="pPr" value="'+p.price+'" step="0.01"></div><div class="field"><label>Stock</label><input type="number" id="pSt" value="'+p.stock+'"></div><div class="field"><label>Reorder Level</label><input type="number" id="pRe" value="'+p.reorder+'"></div></div>',
-'<button class="btn btn-primary" onclick="sP('+((id||0))+')">Save</button><button class="btn btn-outline" onclick="closeModal()">Cancel</button>');
-}
-async function sP(id){
-const d={name:document.getElementById('pN').value.trim(),sku:document.getElementById('pSk').value.trim(),barcode:document.getElementById('pB').value.trim(),categoryId:parseInt(document.getElementById('pCt').value),cost:parseFloat(document.getElementById('pCo').value)||0,price:parseFloat(document.getElementById('pPr').value)||0,stock:parseInt(document.getElementById('pSt').value)||0,reorder:parseInt(document.getElementById('pRe').value)||0};
-if(!d.name||!d.price)return toast('Name & price required');
-if(id){d.id=id;await pO('products',d)}else await aO('products',d);
-closeModal();toast('Saved');nav('products');
-}
-async function dP(id){if(!confirm('Delete?'))return;await dO('products',id);toast('Deleted');nav('products')}
-async function oCM(){
-const cats=await gA('categories');
-oM('Categories',cats.map(c=>'<div style="display:flex;justify-content:space-between;padding:8px;border-bottom:1px solid var(--bg4)"><span>'+c.name+'</span><button class="btn btn-danger btn-sm" onclick="dC('+c.id+')">Del</button></div>').join('')+'<div style="display:flex;gap:6px;margin-top:10px"><input id="nC" placeholder="New category"><button class="btn btn-primary" onclick="aC()">Add</button></div>');
-}
-async function aC(){const n=document.getElementById('nC').value.trim();if(!n)return;await aO('categories',{name:n});closeModal();oCM()}
-async function dC(id){await dO('categories',id);closeModal();oCM()}
 
+async function shR(sale){
+  const se=await gA('settings'),s=se[0]||{};
+  const items=(await gA('saleItems')).filter(i=>i.saleId===sale.id);
+  oM('🧾 Receipt',`<div class="rcp" id="rc">
+    <h2>${s.storeName||'Moswax Shop'}</h2>
+    <div class="rc">${s.address||''}<br>${s.phone||''}</div><div class="rl"></div>
+    <div>Receipt: ${sale.rn}</div><div>Date: ${fD(sale.date)}</div><div>Cashier: ${sale.cashier}</div>
+    ${sale.customer&&sale.customer!=='Walk-in'?'<div>Customer: '+sale.customer+'</div>':''}
+    <div class="rl"></div><table><tr><td><b>Item</b></td><td class="rr"><b>Qty</b></td><td class="rr"><b>Price</b></td><td class="rr"><b>Total</b></td></tr>
+    ${items.map(i=>'<tr><td>'+i.name+'</td><td class="rr">'+i.qty+'</td><td class="rr">'+fmt(i.price)+'</td><td class="rr">'+fmt(i.total)+'</td></tr>').join('')}
+    </table><div class="rl"></div>
+    <div style="display:flex;justify-content:space-between"><span>Subtotal</span><span>${fmt(sale.subtotal)}</span></div>
+    ${sale.tax>0?'<div style="display:flex;justify-content:space-between"><span>'+(s.taxName||'Tax')+'</span><span>'+fmt(sale.tax)+'</span></div>':''}
+    <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:700"><span>TOTAL</span><span>${fmt(sale.total)}</span></div>
+    <div style="display:flex;justify-content:space-between"><span>Payment</span><span>${sale.pm}</span></div>
+    <div class="rl"></div><div class="rc">${s.footer||'Thank you!'}</div>
+    <div class="rc" style="font-size:9px;margin-top:4px">Powered by Moswax POS</div>
+  </div>
+  <div style="text-align:center;margin-top:10px;display:flex;gap:6px;justify-content:center">
+    <button class="bp" onclick="pR()">🖨️ Print</button>
+    <button class="bo" onclick="sR()">📤 Share</button>
+    <button class="bo" onclick="cM()">Close</button>
+  </div>`);
+}
+function pR(){const c=document.getElementById('rc');if(!c)return;const w=window.open('','','width=300,height=500');w.document.write('<html><head><style>body{font-family:monospace;font-size:11px;padding:8px;max-width:270px;margin:0 auto}.rc{text-align:center}.rr{text-align:right}.rl{border-top:1px dashed #000;margin:5px 0}table{width:100%}td{padding:1px 0}h2{margin:0 0 4px;font-size:13px}</style></head><body>'+c.innerHTML+'</body></html>');w.document.close();w.print()}
+function sR(){const c=document.getElementById('rc');if(!c)return;if(navigator.share)navigator.share({title:'Receipt',text:c.innerText}).catch(()=>{});else if(navigator.clipboard){navigator.clipboard.writeText(c.innerText);toast('Copied!')}}
+
+/* ===== INVENTORY ===== */
 async function rInv(el){
-const prods=await gA('products'),logs=await gA('invLog');
-const low=prods.filter(p=>p.stock>0&&p.stock<=p.reorder),out=prods.filter(p=>p.stock<=0);
-el.innerHTML='<h2 style="margin-bottom:14px">📋 Inventory</h2><div class="cards"><div class="card"><div class="label">Total</div><div class="value">'+prods.length+'</div></div><div class="card"><div class="label">In Stock</div><div class="value green">'+prods.filter(p=>p.stock>0).length+'</div></div><div class="card"><div class="label">Low</div><div class="value orange">'+low.length+'</div></div><div class="card"><div class="label">Out</div><div class="value red">'+out.length+'</div></div></div>'
-+(low.length?'<div class="alert-bar alert-warn">⚠️ Low: '+low.map(p=>p.name).join(', ')+'</div>':'')
-+'<div style="display:flex;gap:6px;margin-bottom:14px"><button class="btn btn-success" onclick="oSM(\'in\')">📥 In</button><button class="btn btn-danger" onclick="oSM(\'out\')">📤 Out</button><button class="btn btn-warning" onclick="oSM(\'adj\')">🔧 Adjust</button></div>'
-+'<h3 style="margin-bottom:8px">Movement History</h3><div class="tbl-wrap"><table><tr><th>Date</th><th>Product</th><th>Type</th><th>Qty</th><th>User</th></tr>'
-+logs.slice(-30).reverse().map(l=>'<tr><td>'+fD(l.date)+'</td><td>'+(l.productName||l.productId)+'</td><td><span class="badge '+(l.type==='in'?'badge-green':l.type==='out'?'badge-red':'badge-orange')+'">'+l.type+'</span></td><td>'+l.qty+'</td><td>'+l.user+'</td></tr>').join('')
-+(!logs.length?'<tr><td colspan="5" style="text-align:center;color:var(--text2)">No data</td></tr>':'')+'</table></div>';
+  const pr=await gA('products'),ca=await gA('categories'),lo=await gA('invLog');
+  const cm={};ca.forEach(c=>cm[c.id]=c.name);
+  const lw=pr.filter(p=>p.stock>0&&p.stock<=p.reorder),ou=pr.filter(p=>p.stock<=0);
+  el.innerHTML=`<h2 style="margin-bottom:12px">📦 Inventory</h2>
+    <div class="cds">
+      <div class="cd"><div class="cl">Total Products</div><div class="cv">${pr.length}</div></div>
+      <div class="cd"><div class="cl">In Stock</div><div class="cv g">${pr.filter(p=>p.stock>0).length}</div></div>
+      <div class="cd"><div class="cl">Low Stock</div><div class="cv o">${lw.length}</div></div>
+      <div class="cd"><div class="cl">Out of Stock</div><div class="cv r">${ou.length}</div></div>
+    </div>
+    ${lw.length?'<div class="al al-w">⚠️ Low: '+lw.map(p=>p.name).join(', ')+'</div>':''}
+    <div class="tabs">
+      <button class="on" onclick="invTab(this,0)">Products</button>
+      <button onclick="invTab(this,1)">Stock Movement</button>
+      <button onclick="invTab(this,2)">Categories</button>
+    </div>
+    <div id="invT0">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:6px">
+        <input placeholder="🔍 Search..." style="max-width:250px" oninput="document.querySelectorAll('#pt tr[data-s]').forEach(r=>r.style.display=r.dataset.s.includes(this.value.toLowerCase())?'':'none')">
+        <div style="display:flex;gap:4px">
+          <button class="bp" onclick="oPF()">+ Add Product</button>
+          <button class="bs sm" onclick="oSM('in')">📥 In</button>
+          <button class="bd sm" onclick="oSM('out')">📤 Out</button>
+        </div>
+      </div>
+      <div class="tw"><table id="pt"><tr><th>SKU</th><th>Barcode</th><th>Name</th><th>Category</th><th>Cost</th><th>Price</th><th>Stock</th><th>Act</th></tr>
+      ${pr.map(p=>'<tr data-s="'+(p.name+' '+(p.barcode||'')+' '+(p.sku||'')).toLowerCase()+'"><td>'+(p.sku||'-')+'</td><td>'+(p.barcode||'-')+'</td><td><b>'+p.name+'</b></td><td>'+(cm[p.catId]||'-')+'</td><td>'+fmt(p.cost)+'</td><td>'+fmt(p.price)+'</td><td>'+(p.stock<=0?'<span class="bg bg-r">0</span>':p.stock<=p.reorder?'<span class="bg bg-o">'+p.stock+'</span>':'<span class="bg bg-g">'+p.stock+'</span>')+'</td><td><button class="bo sm" onclick="oPF('+p.id+')">Edit</button> <button class="bd sm" onclick="dPr('+p.id+')">Del</button></td></tr>').join('')}
+      </table></div>
+    </div>
+    <div id="invT1" style="display:none">
+      <div class="tw"><table><tr><th>Date</th><th>Product</th><th>Type</th><th>Qty</th><th>User</th><th>Ref</th></tr>
+      ${lo.slice(-40).reverse().map(l=>'<tr><td>'+fD(l.date)+'</td><td>'+(l.pn||l.productId)+'</td><td><span class="bg '+(l.type==='in'?'bg-g':l.type==='out'?'bg-r':'bg-o')+'">'+l.type+'</span></td><td>'+l.qty+'</td><td>'+l.user+'</td><td>'+(l.ref||'-')+'</td></tr>').join('')}
+      ${!lo.length?'<tr><td colspan="6" style="text-align:center;color:var(--tx2);padding:20px">No movements</td></tr>':''}
+      </table></div>
+    </div>
+    <div id="invT2" style="display:none">
+      <div style="margin-bottom:8px;display:flex;gap:4px"><input id="nC" placeholder="New category" style="max-width:200px"><button class="bp sm" onclick="aCa()">Add</button></div>
+      <div class="tw"><table><tr><th>Name</th><th>Products</th><th>Act</th></tr>
+      ${ca.map(c=>'<tr><td>'+c.name+'</td><td>'+pr.filter(p=>p.catId===c.id).length+'</td><td><button class="bd sm" onclick="dCa('+c.id+')">Del</button></td></tr>').join('')}
+      </table></div>
+    </div>`;
 }
-async function oSM(type){
-const prods=await gA('products');
-oM('Stock '+(type==='in'?'In':type==='out'?'Out':'Adjust'),
-'<div class="field"><label>Product</label><select id="sPr">'+prods.map(p=>'<option value="'+p.id+'">'+p.name+' ('+p.stock+')</option>').join('')+'</select></div><div class="field"><label>Qty</label><input type="number" id="sQ" value="1" min="1"></div><div class="field"><label>Note</label><input id="sN" placeholder="Reason"></div>',
-'<button class="btn btn-primary" onclick="dSM(\''+type+'\')">Confirm</button>');
+function invTab(el,i){el.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('on'));el.classList.add('on');[0,1,2].forEach(n=>{const e=document.getElementById('invT'+n);if(e)e.style.display=n===i?'block':'none'})}
+async function oPF(id){
+  const ca=await gA('categories');let p={name:'',sku:'',barcode:'',catId:ca[0]?.id||'',cost:0,price:0,stock:0,reorder:5};
+  if(id){p=await gO('products',id);if(!p)return}
+  oM(id?'Edit Product':'Add Product',`<div class="fg">
+    <div class="f fl"><label>Product Name *</label><input id="pN" value="${p.name}"></div>
+    <div class="f"><label>SKU</label><input id="pSk" value="${p.sku||''}"></div>
+    <div class="f"><label>Barcode</label><input id="pB" value="${p.barcode||''}"></div>
+    <div class="f"><label>Category</label><select id="pCa">${ca.map(c=>'<option value="'+c.id+'"'+(c.id===p.catId?' selected':'')+'>'+c.name+'</option>').join('')}</select></div>
+    <div class="f"><label>Cost Price</label><input type="number" id="pCo" value="${p.cost}" step="0.01"></div>
+    <div class="f"><label>Selling Price *</label><input type="number" id="pPr" value="${p.price}" step="0.01"></div>
+    <div class="f"><label>Stock Qty</label><input type="number" id="pSt" value="${p.stock}"></div>
+    <div class="f"><label>Reorder Level</label><input type="number" id="pRe" value="${p.reorder}"></div>
+  </div>`,'<button class="bp" onclick="sPr('+(id||0)+')">Save</button><button class="bo" onclick="cM()">Cancel</button>');
 }
-async function dSM(type){
-const pid=parseInt(document.getElementById('sPr').value),qty=parseInt(document.getElementById('sQ').value)||0,note=document.getElementById('sN').value;
-if(!qty)return toast('Enter qty');const p=await gO('products',pid);if(!p)return;
-if(type==='in')p.stock+=qty;else if(type==='out')p.stock=Math.max(0,p.stock-qty);else p.stock=Math.max(0,qty);
-await pO('products',p);await aO('invLog',{productId:pid,productName:p.name,type:type,qty:type==='in'?qty:-qty,date:new Date().toISOString(),user:CU.name,ref:note});
-closeModal();toast('Updated');nav('inventory');
+async function sPr(id){
+  const d={name:document.getElementById('pN').value.trim(),sku:document.getElementById('pSk').value.trim(),barcode:document.getElementById('pB').value.trim(),catId:parseInt(document.getElementById('pCa').value),cost:parseFloat(document.getElementById('pCo').value)||0,price:parseFloat(document.getElementById('pPr').value)||0,stock:parseInt(document.getElementById('pSt').value)||0,reorder:parseInt(document.getElementById('pRe').value)||0};
+  if(!d.name||!d.price)return toast('Name & price required');
+  if(id){d.id=id;await pO('products',d)}else await aO('products',d);
+  cM();toast('Saved');go('inventory');
 }
+async function dPr(id){if(!confirm('Delete this product?'))return;await dO('products',id);toast('Deleted');go('inventory')}
+async function oSM(t){
+  const pr=await gA('products');
+  oM('Stock '+(t==='in'?'In':'Out'),`<div class="f"><label>Product</label><select id="sP">${pr.map(p=>'<option value="'+p.id+'">'+p.name+' (Stock: '+p.stock+')</option>').join('')}</select></div><div class="f"><label>Quantity</label><input type="number" id="sQ" value="1" min="1"></div><div class="f"><label>Note</label><input id="sN" placeholder="Reason"></div>`,
+  '<button class="bp" onclick="dSM(\''+t+'\')">Confirm</button>');
+}
+async function dSM(t){
+  const pid=parseInt(document.getElementById('sP').value),qty=parseInt(document.getElementById('sQ').value)||0,note=document.getElementById('sN').value;
+  if(!qty)return toast('Enter quantity');const p=await gO('products',pid);if(!p)return;
+  if(t==='in')p.stock+=qty;else p.stock=Math.max(0,p.stock-qty);
+  await pO('products',p);await aO('invLog',{productId:pid,pn:p.name,type:t,qty:t==='in'?qty:-qty,date:new Date().toISOString(),user:CU.name,ref:note});
+  cM();toast('Stock updated');go('inventory');
+}
+async function aCa(){const n=document.getElementById('nC').value.trim();if(!n)return;await aO('categories',{name:n});toast('Added');go('inventory')}
+async function dCa(id){if(!confirm('Delete category?'))return;await dO('categories',id);toast('Deleted');go('inventory')}
 
-async function rSales(el){
-const sales=await gA('sales');
-el.innerHTML='<h2 style="margin-bottom:14px">💰 Sales ('+sales.length+')</h2>'
-+'<div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap"><input type="date" id="sDF" onchange="fS()"><input type="date" id="sDT" onchange="fS()"><select id="sCF" onchange="fS()"><option value="">All Cashiers</option>'+[...new Set(sales.map(s=>s.cashier))].map(n=>'<option>'+n+'</option>').join('')+'</select></div>'
-+'<div class="tbl-wrap"><table id="sT"><tr><th>Receipt</th><th>Date</th><th>Cashier</th><th>Customer</th><th>Total</th><th>Pay</th><th>Act</th></tr>'
-+sales.slice().reverse().map(s=>'<tr data-d="'+(s.date||'').split('T')[0]+'" data-c="'+s.cashier+'"><td>'+s.receiptNo+'</td><td>'+fD(s.date)+'</td><td>'+s.cashier+'</td><td>'+(s.customer||'-')+'</td><td><strong>'+fmt(s.total)+'</strong></td><td><span class="badge badge-blue">'+s.payMethod+'</span></td><td><button class="btn btn-outline btn-sm" onclick="vS('+s.id+')">View</button></td></tr>').join('')
-+'</table></div>';
+/* ===== FINANCE ===== */
+async function rFin(el){
+  const sa=await gA('sales'),it=await gA('saleItems');
+  const tot=sa.reduce((a,s)=>a+s.total,0);
+  const now=new Date();
+  const mRev=sa.filter(s=>{const d=new Date(s.date);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear()}).reduce((a,s)=>a+s.total,0);
+  const tRev=sa.filter(s=>new Date(s.date).toDateString()===now.toDateString()).reduce((a,s)=>a+s.total,0);
+  const byM={},byC={},tP={};
+  sa.forEach(s=>{byM[s.pm]=(byM[s.pm]||0)+s.total;byC[s.cashier]=(byC[s.cashier]||0)+s.total});
+  it.forEach(i=>{tP[i.name]=(tP[i.name]||0)+i.qty});
+  const tL=Object.entries(tP).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  el.innerHTML=`<h2 style="margin-bottom:12px">💰 Finance</h2>
+    <div class="cds">
+      <div class="cd"><div class="cl">Total Revenue</div><div class="cv g">${fmt(tot)}</div></div>
+      <div class="cd"><div class="cl">This Month</div><div class="cv">${fmt(mRev)}</div></div>
+      <div class="cd"><div class="cl">Today</div><div class="cv">${fmt(tRev)}</div></div>
+      <div class="cd"><div class="cl">Total Orders</div><div class="cv">${sa.length}</div></div>
+    </div>
+    <div class="tabs">
+      <button class="on" onclick="finTab(this,0)">Overview</button>
+      <button onclick="finTab(this,1)">All Sales</button>
+      <button onclick="finTab(this,2)">Top Products</button>
+    </div>
+    <div id="finT0">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="sec"><h3>💳 Revenue by Payment</h3>${Object.entries(byM).map(([k,v])=>'<div class="sr"><span>'+k+'</span><b>'+fmt(v)+'</b></div>').join('')||'<div style="color:var(--tx2)">No data</div>'}</div>
+        <div class="sec"><h3>👤 Revenue by Staff</h3>${Object.entries(byC).map(([k,v])=>'<div class="sr"><span>'+k+'</span><b>'+fmt(v)+'</b></div>').join('')||'<div style="color:var(--tx2)">No data</div>'}</div>
+      </div>
+    </div>
+    <div id="finT1" style="display:none">
+      <div style="display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap">
+        <input type="date" id="ff" onchange="fSa()">
+        <input type="date" id="ft" onchange="fSa()">
+        <select id="fc" onchange="fSa()"><option value="">All Staff</option>${[...new Set(sa.map(s=>s.cashier))].map(n=>'<option>'+n+'</option>').join('')}</select>
+      </div>
+      <div class="tw"><table id="stb"><tr><th>Receipt</th><th>Date</th><th>Cashier</th><th>Customer</th><th>Total</th><th>Payment</th><th>Act</th></tr>
+      ${sa.slice().reverse().map(s=>'<tr data-d="'+(s.date||'').split('T')[0]+'" data-c="'+s.cashier+'"><td>'+s.rn+'</td><td>'+fD(s.date)+'</td><td>'+s.cashier+'</td><td>'+(s.customer||'-')+'</td><td><b>'+fmt(s.total)+'</b></td><td><span class="bg bg-b">'+s.pm+'</span></td><td><button class="bo sm" onclick="vSa('+s.id+')">View</button></td></tr>').join('')}
+      </table></div>
+    </div>
+    <div id="finT2" style="display:none">
+      <div class="tw"><table><tr><th>#</th><th>Product</th><th>Qty Sold</th></tr>
+      ${tL.map(([n,q],i)=>'<tr><td>'+(i+1)+'</td><td>'+n+'</td><td><b>'+q+'</b></td></tr>').join('')}
+      ${!tL.length?'<tr><td colspan="3" style="text-align:center;color:var(--tx2)">No data</td></tr>':''}
+      </table></div>
+    </div>
+    <div style="margin-top:12px"><button class="bp" onclick="eR()">📤 Export Sales CSV</button></div>`;
 }
-function fS(){const f=document.getElementById('sDF').value,t=document.getElementById('sDT').value,c=document.getElementById('sCF').value;document.querySelectorAll('#sT tr[data-d]').forEach(r=>{let s=true;if(f&&r.dataset.d<f)s=false;if(t&&r.dataset.d>t)s=false;if(c&&r.dataset.c!==c)s=false;r.style.display=s?'':'none'})}
-async function vS(id){const s=await gO('sales',id);if(s)showRcpt(s)}
+function finTab(el,i){el.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('on'));el.classList.add('on');[0,1,2].forEach(n=>{const e=document.getElementById('finT'+n);if(e)e.style.display=n===i?'block':'none'})}
+function fSa(){const f=document.getElementById('ff').value,t=document.getElementById('ft').value,c=document.getElementById('fc').value;document.querySelectorAll('#stb tr[data-d]').forEach(r=>{let s=true;if(f&&r.dataset.d<f)s=false;if(t&&r.dataset.d>t)s=false;if(c&&r.dataset.c!==c)s=false;r.style.display=s?'':'none'})}
+async function vSa(id){const s=await gO('sales',id);if(s)shR(s)}
+async function eR(){const sa=await gA('sales');let c='Receipt,Date,Cashier,Customer,Subtotal,Tax,Total,Payment\n';sa.forEach(s=>{c+=s.rn+','+s.date+','+s.cashier+','+(s.customer||'')+','+s.subtotal+','+s.tax+','+s.total+','+s.pm+'\n'});const b=new Blob([c],{type:'text/csv'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='moswax_finance_'+new Date().toISOString().slice(0,10)+'.csv';a.click();toast('Exported')}
 
-async function rReports(el){
-const sales=await gA('sales'),items=await gA('saleItems');
-const tot=sales.reduce((a,s)=>a+s.total,0);
-const now=new Date();const mRev=sales.filter(s=>{const d=new Date(s.date);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear()}).reduce((a,s)=>a+s.total,0);
-const byM={},byC={},topP={};
-sales.forEach(s=>{byM[s.payMethod]=(byM[s.payMethod]||0)+s.total;byC[s.cashier]=(byC[s.cashier]||0)+s.total});
-items.forEach(i=>{topP[i.name]=(topP[i.name]||0)+i.qty});
-const topL=Object.entries(topP).sort((a,b)=>b[1]-a[1]).slice(0,8);
-el.innerHTML='<h2 style="margin-bottom:14px">📈 Reports</h2><div class="cards"><div class="card"><div class="label">Total Revenue</div><div class="value green">'+fmt(tot)+'</div></div><div class="card"><div class="label">This Month</div><div class="value">'+fmt(mRev)+'</div></div><div class="card"><div class="label">Total Sales</div><div class="value">'+sales.length+'</div></div><div class="card"><div class="label">Avg Sale</div><div class="value">'+fmt(sales.length?tot/sales.length:0)+'</div></div></div>'
-+'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div class="settings-section"><h3>💳 By Payment</h3>'+Object.entries(byM).map(([k,v])=>'<div class="setting-row"><label>'+k+'</label><strong>'+fmt(v)+'</strong></div>').join('')+'</div>'
-+'<div class="settings-section"><h3>👤 By Cashier</h3>'+Object.entries(byC).map(([k,v])=>'<div class="setting-row"><label>'+k+'</label><strong>'+fmt(v)+'</strong></div>').join('')+'</div></div>'
-+'<div class="settings-section"><h3>🏆 Top Products</h3><div class="tbl-wrap"><table><tr><th>#</th><th>Product</th><th>Sold</th></tr>'+topL.map(([n,q],i)=>'<tr><td>'+(i+1)+'</td><td>'+n+'</td><td>'+q+'</td></tr>').join('')+'</table></div></div>'
-+'<button class="btn btn-primary" onclick="eR()">📤 Export CSV</button>';
-}
-async function eR(){const sales=await gA('sales');let c='Receipt,Date,Cashier,Customer,Total,Payment\n';sales.forEach(s=>{c+=s.receiptNo+','+s.date+','+s.cashier+','+(s.customer||'')+','+s.total+','+s.payMethod+'\n'});const b=new Blob([c],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='moswax_report.csv';a.click();toast('Exported')}
-
-async function rUsers(el){
-const users=await gA('users');
-el.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><h2>👥 Users</h2><button class="btn btn-primary" onclick="oUF()">+ Add User</button></div>'
-+'<div class="tbl-wrap"><table><tr><th>Name</th><th>Username</th><th>Role</th><th>Status</th><th>Actions</th></tr>'
-+users.map(u=>'<tr><td><strong>'+u.name+'</strong></td><td>'+u.username+'</td><td><span class="badge badge-blue">'+(ROLES[u.role]?.l||u.role)+'</span></td><td>'+(u.active?'<span class="badge badge-green">Active</span>':'<span class="badge badge-red">Inactive</span>')+'</td><td><button class="btn btn-outline btn-sm" onclick="oUF('+u.id+')">Edit</button></td></tr>').join('')
-+'</table></div>';
+/* ===== USERS ===== */
+async function rUsr(el){
+  const u=await gA('users');
+  el.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <h2>👥 Users & Permissions</h2>
+    <button class="bp" onclick="oUF()">+ Add User</button>
+  </div>
+  <div class="sec"><h3>Role Permissions Matrix</h3>
+    <div class="perms">
+      <div class="hd">Role</div><div class="hd">POS</div><div class="hd">Inventory</div><div class="hd">Finance</div><div class="hd">Users</div><div class="hd">Settings</div>
+      ${Object.entries(ROLES).map(([k,v])=>'<div><b>'+v.l+'</b></div><div class="'+(v.p.pos?'on':'off')+'">'+(v.p.pos?'✓':'✕')+'</div><div class="'+(v.p.inventory?'on':'off')+'">'+(v.p.inventory?'✓':'✕')+'</div><div class="'+(v.p.finance?'on':'off')+'">'+(v.p.finance?'✓':'✕')+'</div><div class="'+(v.p.users?'on':'off')+'">'+(v.p.users?'✓':'✕')+'</div><div class="'+(v.p.settings?'on':'off')+'">'+(v.p.settings?'✓':'✕')+'</div>').join('')}
+    </div>
+  </div>
+  <div class="tw"><table><tr><th>Name</th><th>Username</th><th>Role</th><th>Status</th><th>Actions</th></tr>
+  ${u.map(x=>'<tr><td><b>'+x.name+'</b></td><td>'+x.username+'</td><td><span class="bg bg-b">'+(ROLES[x.role]?.l||x.role)+'</span></td><td>'+(x.active?'<span class="bg bg-g">Active</span>':'<span class="bg bg-r">Inactive</span>')+'</td><td><button class="bo sm" onclick="oUF('+x.id+')">Edit</button></td></tr>').join('')}
+  </table></div>`;
 }
 async function oUF(id){
-let u={name:'',username:'',password:'',role:'cashier',active:true};
-if(id){u=await gO('users',id);if(!u)return}
-oM(id?'Edit User':'Add User',
-'<div class="form-grid"><div class="field full"><label>Full Name</label><input id="uN" value="'+u.name+'"></div><div class="field"><label>Username</label><input id="uU" value="'+u.username+'"></div><div class="field"><label>Password'+(id?' (leave blank to keep)':'')+'</label><input id="uP" type="password" value=""></div><div class="field"><label>Role</label><select id="uR">'+Object.entries(ROLES).map(([k,v])=>'<option value="'+k+'"'+(k===u.role?' selected':'')+'>'+v.l+'</option>').join('')+'</select></div><div class="field"><label>Active</label><select id="uA"><option value="1"'+(u.active?' selected':'')+'>Yes</option><option value="0"'+(!u.active?' selected':'')+'>No</option></select></div></div>',
-'<button class="btn btn-primary" onclick="sU('+(id||0)+')">Save</button>');
+  let u={name:'',username:'',password:'',role:'cashier',active:true};
+  if(id){u=await gO('users',id);if(!u)return}
+  oM(id?'Edit User':'Add User',`<div class="fg">
+    <div class="f fl"><label>Full Name *</label><input id="uN" value="${u.name}"></div>
+    <div class="f"><label>Username *</label><input id="uU" value="${u.username}"></div>
+    <div class="f"><label>Password${id?' (blank = keep)':''}</label><input id="uP" type="password"></div>
+    <div class="f"><label>Role</label><select id="uR">${Object.entries(ROLES).map(([k,v])=>'<option value="'+k+'"'+(k===u.role?' selected':'')+'>'+v.l+'</option>').join('')}</select></div>
+    <div class="f"><label>Active</label><select id="uA"><option value="1"${u.active?' selected':''}>Yes</option><option value="0"${!u.active?' selected':''}>No</option></select></div>
+  </div>`,'<button class="bp" onclick="sUs('+(id||0)+')">Save</button><button class="bo" onclick="cM()">Cancel</button>');
 }
-async function sU(id){
-const d={name:document.getElementById('uN').value.trim(),username:document.getElementById('uU').value.trim(),role:document.getElementById('uR').value,active:document.getElementById('uA').value==='1'};
-const pw=document.getElementById('uP').value;
-if(!d.name||!d.username)return toast('Name & username required');
-if(id){d.id=id;if(pw)d.password=pw;else{const o=await gO('users',id);d.password=o.password}await pO('users',d)}
-else{if(!pw)return toast('Password required');d.password=pw;await aO('users',d)}
-closeModal();toast('Saved');nav('users');
-}
-
-async function rShifts(el){
-const shifts=await gA('shifts');
-el.innerHTML='<h2 style="margin-bottom:14px">⏰ Shift Management</h2>'
-+(CS?'<div class="alert-bar" style="background:rgba(0,230,118,.12);color:var(--green);border:1px solid rgba(0,230,118,.3)">✅ Shift Open since '+fD(CS.openedAt)+'</div><div style="display:flex;gap:8px"><button class="btn btn-danger btn-lg" onclick="cShift()">Close Shift</button></div>'
-:'<div class="alert-bar alert-warn">No active shift</div><div class="field" style="max-width:300px"><label>Opening Cash</label><input type="number" id="oCash" value="0"></div><button class="btn btn-success btn-lg" onclick="oShift()">Open Shift</button>')
-+'<h3 style="margin:20px 0 10px">Shift History</h3><div class="tbl-wrap"><table><tr><th>Date</th><th>User</th><th>Opened</th><th>Closed</th><th>Open Cash</th><th>Close Cash</th><th>Sales</th></tr>'
-+shifts.slice().reverse().map(s=>'<tr><td>'+fD(s.openedAt)+'</td><td>'+s.user+'</td><td>'+fD(s.openedAt)+'</td><td>'+(s.closedAt?fD(s.closedAt):'<span class="badge badge-orange">Open</span>')+'</td><td>'+fmt(s.openCash)+'</td><td>'+(s.closeCash!=null?fmt(s.closeCash):'-')+'</td><td>'+fmt(s.totalSales||0)+'</td></tr>').join('')
-+(!shifts.length?'<tr><td colspan="7" style="text-align:center;color:var(--text2)">No shifts</td></tr>':'')+'</table></div>';
-}
-async function oShift(){
-const oc=parseFloat(document.getElementById('oCash')?.value)||0;
-const sid=await aO('shifts',{user:CU.name,openedAt:new Date().toISOString(),openCash:oc,closedAt:null,closeCash:null,totalSales:0});
-CS=await gO('shifts',sid);
-document.getElementById('shiftBadge').textContent='Shift Open';document.getElementById('shiftBadge').className='badge badge-green';
-toast('Shift opened');nav('shifts');
-}
-async function cShift(){
-if(!CS)return;
-const sales=await gA('sales');
-const ss=sales.filter(s=>s.shiftId===CS.id);
-const tot=ss.reduce((a,s)=>a+s.total,0);
-oM('Close Shift','<div style="text-align:center;margin-bottom:12px"><div style="font-size:14px;color:var(--text2)">Total Sales This Shift</div><div style="font-size:28px;font-weight:800;color:var(--green)">'+fmt(tot)+'</div></div><div class="field"><label>Closing Cash Count</label><input type="number" id="clCash" value="'+(CS.openCash+tot).toFixed(2)+'"></div>',
-'<button class="btn btn-danger btn-lg" onclick="dCS('+tot+')">Confirm Close</button>');
-}
-async function dCS(tot){
-CS.closedAt=new Date().toISOString();CS.closeCash=parseFloat(document.getElementById('clCash').value)||0;CS.totalSales=tot;
-await pO('shifts',CS);CS=null;
-document.getElementById('shiftBadge').textContent='No Shift';document.getElementById('shiftBadge').className='badge badge-orange';
-closeModal();toast('Shift closed');nav('shifts');
+async function sUs(id){
+  const d={name:document.getElementById('uN').value.trim(),username:document.getElementById('uU').value.trim(),role:document.getElementById('uR').value,active:document.getElementById('uA').value==='1'};
+  const pw=document.getElementById('uP').value;
+  if(!d.name||!d.username)return toast('Name & username required');
+  if(id){d.id=id;if(pw)d.password=pw;else{const o=await gO('users',id);d.password=o.password}await pO('users',d)}
+  else{if(!pw)return toast('Password required');d.password=pw;await aO('users',d)}
+  cM();toast('User saved');go('users');
 }
 
-async function rSettings(el){
-const sets=await gA('settings');const s=sets[0]||{};
-el.innerHTML='<h2 style="margin-bottom:14px">⚙️ Settings</h2>'
-+'<div class="settings-section"><h3>Store Info</h3><div class="form-grid"><div class="field"><label>Store Name</label><input id="stN" value="'+(s.storeName||'')+'"></div><div class="field"><label>Phone</label><input id="stPh" value="'+(s.phone||'')+'"></div><div class="field full"><label>Address</label><input id="stA" value="'+(s.address||'')+'"></div></div></div>'
-+'<div class="settings-section"><h3>Tax</h3><div class="form-grid"><div class="field"><label>Tax Name</label><input id="stTN" value="'+(s.taxName||'Tax')+'"></div><div class="field"><label>Tax Rate (%)</label><input type="number" id="stTR" value="'+(s.taxRate||0)+'" step="0.1"></div></div></div>'
-+'<div class="settings-section"><h3>Receipt</h3><div class="field"><label>Footer Message</label><input id="stRF" value="'+(s.receiptFooter||'')+'"></div><div class="field"><label>Currency Symbol</label><input id="stCur" value="'+(s.currency||'$')+'"></div></div>'
-+'<button class="btn btn-primary btn-lg" onclick="sSet()">Save Settings</button>';
+/* ===== SETTINGS ===== */
+async function rSet(el){
+  const se=await gA('settings'),s=se[0]||{};
+  el.innerHTML=`<h2 style="margin-bottom:12px">⚙️ Settings</h2>
+    <div class="sec"><h3>🏪 Store Information</h3><div class="fg">
+      <div class="f"><label>Store Name</label><input id="sN" value="${s.storeName||''}"></div>
+      <div class="f"><label>Phone</label><input id="sPh" value="${s.phone||''}"></div>
+      <div class="f fl"><label>Address</label><input id="sA" value="${s.address||''}"></div>
+    </div></div>
+    <div class="sec"><h3>💲 Tax Settings</h3><div class="fg">
+      <div class="f"><label>Tax Name</label><input id="sTN" value="${s.taxName||'Tax'}"></div>
+      <div class="f"><label>Tax Rate (%)</label><input type="number" id="sTR" value="${s.taxRate||0}" step="0.1"></div>
+    </div></div>
+    <div class="sec"><h3>🧾 Receipt Settings</h3>
+      <div class="f"><label>Footer Message</label><input id="sRF" value="${s.footer||''}"></div>
+      <div class="f"><label>Currency Symbol</label><input id="sCu" value="${s.currency||'$'}"></div>
+    </div>
+    <div class="sec"><h3>💾 Backup & Data</h3>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="bp" onclick="expA()">📤 Export Backup</button>
+        <button class="bo" onclick="document.getElementById('iF').click()">📥 Import Backup</button>
+        <input type="file" id="iF" accept=".json" style="display:none" onchange="impA()">
+        <button class="bd" onclick="if(confirm('DELETE ALL DATA? This cannot be undone!'))clrA()">🗑️ Clear All Data</button>
+      </div>
+    </div>
+    <button class="bp" style="padding:12px 24px;font-size:15px" onclick="sSe()">💾 Save Settings</button>`;
 }
-async function sSet(){
-const sets=await gA('settings');const s=sets[0]||{id:1};
-s.storeName=document.getElementById('stN').value;s.phone=document.getElementById('stPh').value;s.address=document.getElementById('stA').value;
-s.taxName=document.getElementById('stTN').value;s.taxRate=parseFloat(document.getElementById('stTR').value)||0;
-s.receiptFooter=document.getElementById('stRF').value;s.currency=document.getElementById('stCur').value;
-s.id=1;await pO('settings',s);localStorage.setItem('mx_s',JSON.stringify(s));toast('Saved');
+async function sSe(){
+  const se=await gA('settings'),s=se[0]||{id:1};
+  s.storeName=document.getElementById('sN').value;s.phone=document.getElementById('sPh').value;s.address=document.getElementById('sA').value;
+  s.taxName=document.getElementById('sTN').value;s.taxRate=parseFloat(document.getElementById('sTR').value)||0;
+  s.footer=document.getElementById('sRF').value;s.currency=document.getElementById('sCu').value;
+  s.id=1;await pO('settings',s);localStorage.setItem('mx_s',JSON.stringify(s));toast('Settings saved');
 }
-
-async function rBackup(el){
-el.innerHTML='<h2 style="margin-bottom:14px">💾 Backup & Export</h2>'
-+'<div class="settings-section"><h3>Export All Data</h3><p style="color:var(--text2);margin-bottom:12px">Download a complete backup of all your POS data as a JSON file.</p><button class="btn btn-primary btn-lg" onclick="expAll()">📤 Export Backup (JSON)</button></div>'
-+'<div class="settings-section"><h3>Import Data</h3><p style="color:var(--text2);margin-bottom:12px">Restore from a previous backup. This will overwrite current data!</p><input type="file" id="impF" accept=".json" style="margin-bottom:8px"><br><button class="btn btn-warning" onclick="impAll()">📥 Import Backup</button></div>'
-+'<div class="settings-section"><h3>Export Sales CSV</h3><button class="btn btn-outline" onclick="eR()">📤 Export Sales CSV</button></div>'
-+'<div class="settings-section"><h3 style="color:var(--red)">⚠️ Danger Zone</h3><button class="btn btn-danger" onclick="if(confirm(\'DELETE ALL DATA? This cannot be undone!\'))clrAll()">Delete All Data</button></div>';
+async function expA(){
+  const d={};for(const s of['users','products','categories','sales','saleItems','invLog','settings'])d[s]=await gA(s);
+  const b=new Blob([JSON.stringify(d,null,2)],{type:'application/json'}),a=document.createElement('a');
+  a.href=URL.createObjectURL(b);a.download='moswax_backup_'+new Date().toISOString().slice(0,10)+'.json';a.click();toast('Backup downloaded');
 }
-async function expAll(){
-const data={};
-for(const s of['users','products','categories','sales','saleItems','payments','invLog','shifts','settings']){data[s]=await gA(s)}
-const b=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
-const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='moswax_backup_'+new Date().toISOString().slice(0,10)+'.json';a.click();toast('Backup downloaded');
+async function impA(){
+  const f=document.getElementById('iF').files[0];if(!f)return toast('Select a file');
+  try{const d=JSON.parse(await f.text());for(const[s,items]of Object.entries(d))for(const i of items)await pO(s,i);toast('Data imported!');go('dashboard')}catch(e){toast('Invalid file')}
 }
-async function impAll(){
-const f=document.getElementById('impF').files[0];if(!f)return toast('Select file');
-const txt=await f.text();const data=JSON.parse(txt);
-for(const[s,items]of Object.entries(data)){for(const item of items){await pO(s,item)}}
-toast('Data imported!');nav('dashboard');
-}
-async function clrAll(){
-for(const s of['products','categories','sales','saleItems','payments','invLog','shifts']){const items=await gA(s);for(const i of items)await dO(s,i.id)}
-toast('Data cleared');nav('dashboard');
+async function clrA(){
+  for(const s of['products','categories','sales','saleItems','invLog']){const items=await gA(s);for(const i of items)await dO(s,i.id)}
+  toast('All data cleared');go('dashboard');
 }
 
 init();
