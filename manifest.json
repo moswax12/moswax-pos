@@ -1,0 +1,25 @@
+{
+  "name": "Moswax POS",
+  "short_name": "MoswaxPOS",
+  "description": "Offline Point of Sale for General Shop",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1a1a2e",
+  "theme_color": "#16213e",
+  "categories": ["business", "productivity"],
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='80' fill='%231a1a2e'/><text x='256' y='300' font-size='200' text-anchor='middle' fill='%2300d4ff' font-family='Arial' font-weight='bold'>M</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='30' fill='%231a1a2e'/><text x='96' y='120' font-size='80' text-anchor='middle' fill='%2300d4ff' font-family='Arial' font-weight='bold'>M</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
