@@ -1,4 +1,4 @@
-{
+{"name":"Moswax POS","short_name":"MoswaxPOS","start_url":"./","display":"standalone","background_color":"#0f172a","theme_color":"#0f172a","icons":[{"src":"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230f172a'/><text x='50' y='62' font-size='40' text-anchor='middle' fill='%2338bdf8'>M</text></svg>","sizes":"any","type":"image/svg+xml"}]}{
   "name": "Moswax POS",
   "short_name": "MoswaxPOS",
   "start_url": "/moswax-pos/",
