@@ -1,21 +1,329 @@
-let scanStream=null,scanTimer=null;
-async function rPOS(el){const pr=await gA('products'),ca=await gA('categories'),se=await gA('settings'),tx=se[0]?.taxRate||0;el.innerHTML='<div class="pos"><div style="display:flex;flex-direction:column;overflow:hidden"><div class="psch"><input id="ps" placeholder="🔍 Search/scan..." oninput="fP()"><button class="bp sm" onclick="openScan()" style="padding:8px 10px;font-size:16px">📷</button><select id="pc" onchange="fP()" style="width:80px"><option value="">All</option>'+ca.map(c=>'<option value="'+c.id+'">'+c.name+'</option>').join('')+'</select></div><div class="pgr">'+pr.map(p=>'<div class="pi '+(p.stock<=0?'out':'')+'" onclick="aC('+p.id+')" data-n="'+p.name.toLowerCase()+'" data-b="'+(p.barcode||'')+'" data-c="'+p.catId+'"><div class="pn">'+p.name+'</div><div class="pp">'+fmt(p.price)+'</div><div class="ps">Stk:'+p.stock+'</div></div>').join('')+'</div></div><div class="crt"><div class="crt-h"><span>🛒('+cart.length+')</span><div style="display:flex;gap:2px"><button class="bo sm" onclick="sH()">Held</button><button class="bw sm" onclick="hS()">Hold</button></div></div><div class="crt-i" id="ci">'+rCI()+'</div><div class="crt-f"><div class="ctot"><div><span>Sub</span><span id="cS">'+fmt(cart.reduce((a,c)=>a+c.price*c.qty,0))+'</span></div><div><span>'+(se[0]?.taxName||'VAT')+'('+tx+'%)</span><span id="cT">'+fmt(cart.reduce((a,c)=>a+c.price*c.qty,0)*tx/100)+'</span></div><div class="gt"><span>Total</span><span id="cTo">'+fmt(cart.reduce((a,c)=>a+c.price*c.qty,0)*(1+tx/100))+'</span></div></div><div class="cact"><button class="bd" onclick="cart=[];uC()">Clear</button><button class="bs" onclick="oPay()" '+(cart.length?'':'disabled style="opacity:.4"')+'>💳 Pay</button></div></div></div></div>'}
-function rCI(){return cart.map((c,i)=>'<div class="cr"><span class="cn">'+c.name+'</span><div class="cq"><button onclick="cQ('+i+',-1)">−</button><span>'+c.qty+'</span><button onclick="cQ('+i+',1)">+</button></div><span class="ct">'+fmt(c.price*c.qty)+'</span><span class="cx" onclick="cart.splice('+i+',1);uC()">✕</span></div>').join('')||'<div style="text-align:center;padding:14px;color:var(--tx2)">Empty</div>'}
-function uC(){const e=document.getElementById('ci');if(!e)return;e.innerHTML=rCI();const se=JSON.parse(localStorage.getItem('mx_s')||'{}'),tx=se.taxRate||0,sub=cart.reduce((a,c)=>a+c.price*c.qty,0);document.getElementById('cS').textContent=fmt(sub);document.getElementById('cT').textContent=fmt(sub*tx/100);document.getElementById('cTo').textContent=fmt(sub*(1+tx/100));document.querySelector('.crt-h span').textContent='🛒('+cart.length+')'}
-async function aC(pid){const p=await gO('products',pid);if(!p||p.stock<=0)return toast('Out of stock!');const e=cart.find(c=>c.pid===pid);if(e){if(e.qty>=p.stock)return toast('Max');e.qty++}else cart.push({pid,name:p.name,price:p.price,qty:1,mx:p.stock});uC()}
-function cQ(i,d){cart[i].qty+=d;if(cart[i].qty<=0)cart.splice(i,1);if(cart[i]&&cart[i].qty>cart[i].mx)cart[i].qty=cart[i].mx;uC()}
-function fP(){const q=document.getElementById('ps')?.value.toLowerCase()||'',c=document.getElementById('pc')?.value||'';document.querySelectorAll('.pi').forEach(e=>{e.style.display=(e.dataset.n.includes(q)||e.dataset.b.includes(q))&&(!c||e.dataset.c===c)?'':'none'})}
-function hS(){if(!cart.length)return toast('Empty');const h=JSON.parse(localStorage.getItem('mx_h')||'[]');h.push({id:Date.now().toString(36),items:[...cart],date:new Date().toISOString(),user:CU.name});localStorage.setItem('mx_h',JSON.stringify(h));cart=[];uC();toast('Held')}
-function sH(){const h=JSON.parse(localStorage.getItem('mx_h')||'[]');if(!h.length)return toast('None');oM('Held',h.map(x=>'<div style="display:flex;justify-content:space-between;align-items:center;padding:5px;border-bottom:1px solid var(--b3)"><div><b>'+x.items.length+' items</b><br><small style="color:var(--tx2)">'+fD(x.date)+'</small></div><div style="display:flex;gap:2px"><button class="bp sm" onclick="rS(\''+x.id+'\')">Go</button><button class="bd sm" onclick="dH(\''+x.id+'\')">Del</button></div></div>').join(''))}
-function rS(id){const h=JSON.parse(localStorage.getItem('mx_h')||'[]'),x=h.find(a=>a.id===id);if(x){cart=x.items;uC()}localStorage.setItem('mx_h',JSON.stringify(h.filter(a=>a.id!==id)));cM();toast('Resumed')}
-function dH(id){const h=JSON.parse(localStorage.getItem('mx_h')||'[]');localStorage.setItem('mx_h',JSON.stringify(h.filter(a=>a.id!==id)));cM();sH()}
-async function openScan(){oM('📷 Barcode Scanner','<div id="scanArea"><p style="color:var(--tx2);font-size:11px;margin-bottom:6px">Point camera at barcode</p><div class="scanner-box"><video id="scanVid" autoplay playsinline></video><div class="scan-line"></div></div><div id="scanRes"></div><div class="f" style="margin-top:8px"><label>Or type barcode manually</label><input id="scanManual" placeholder="Type barcode..." onkeydown="if(event.key===\'Enter\')doScanManual()"></div></div>','<button class="bd" onclick="stopScan()">Close</button>');try{scanStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:640},height:{ideal:480}}});const vid=document.getElementById('scanVid');vid.srcObject=scanStream;await vid.play();if('BarcodeDetector'in window){const det=new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e','code_128','code_39','qr_code']});scanTimer=setInterval(async()=>{try{const codes=await det.detect(vid);if(codes.length>0){const val=codes[0].rawValue;stopScan();await scanFound(val)}}catch(e){}},500)}else{document.getElementById('scanRes').innerHTML='<div class="al al-w">BarcodeDetector not supported. Type manually below.</div>'}}catch(e){document.getElementById('scanRes').innerHTML='<div class="al al-w">Camera error: '+e.message+'. Type manually below.</div>'}}
-function stopScan(){if(scanTimer){clearInterval(scanTimer);scanTimer=null}if(scanStream){scanStream.getTracks().forEach(t=>t.stop());scanStream=null}cM()}
-async function doScanManual(){const v=document.getElementById('scanManual')?.value.trim();if(!v)return;if(v)await scanFound(v)}
-async function scanFound(code){stopScan();toast('Scanned: '+code);const pr=await gA('products');const p=pr.find(x=>x.barcode===code);if(p){await aC(p.id);toast('Added: '+p.name)}else{toast('Product not found for: '+code);const si=document.getElementById('ps');if(si){si.value=code;fP()}}}
-async function oPay(){if(!cart.length)return;const se=await gA('settings'),tx=se[0]?.taxRate||0,sub=cart.reduce((a,c)=>a+c.price*c.qty,0),tot=sub*(1+tx/100);window._pm='Cash';oM('💳 Payment','<div style="text-align:center;margin-bottom:6px"><div style="font-size:10px;color:var(--tx2)">Total</div><div style="font-size:24px;font-weight:800;color:var(--ac)">'+fmt(tot)+'</div></div><div class="pms"><div class="sel" onclick="sPM(this,\'Cash\')"><div class="ic">💵</div><div class="lb">Cash</div></div><div onclick="sPM(this,\'Card\')"><div class="ic">💳</div><div class="lb">Card</div></div><div onclick="sPM(this,\'M-Pesa\')"><div class="ic">📱</div><div class="lb">M-Pesa</div></div></div><div id="cs"><div class="f"><label>Received</label><input type="number" id="ar" value="'+tot.toFixed(2)+'" oninput="document.getElementById(\'cd\').textContent=\'Change: \'+fmt(Math.max(0,parseFloat(this.value||0)-'+tot+'))"></div><div style="text-align:center;font-size:14px;font-weight:700;color:var(--gn)" id="cd">Change: '+fmt(0)+'</div></div><div class="f" style="margin-top:4px"><label>Customer</label><input id="pcu" placeholder="Walk-in"></div>','<button class="bs" style="width:100%;padding:10px" onclick="cSa('+tot+')">✅ Complete</button>')}
-function sPM(el,m){document.querySelectorAll('.pms div').forEach(e=>e.classList.remove('sel'));el.classList.add('sel');window._pm=m;document.getElementById('cs').style.display=m==='Cash'?'block':'none'}
-async function cSa(tot){const se=await gA('settings'),tx=se[0]?.taxRate||0,sub=cart.reduce((a,c)=>a+c.price*c.qty,0),rn='RCP-'+Date.now().toString(36).toUpperCase(),cu=document.getElementById('pcu')?.value||'Walk-in';let pm=window._pm;if(pm==='Card')pm='Card(External)';const sid=await aO('sales',{rn,date:new Date().toISOString(),cashier:CU.name,customer:cu,subtotal:sub,tax:sub*tx/100,total:tot,pm,ic:cart.length});for(const c of cart){await aO('saleItems',{saleId:sid,productId:c.pid,name:c.name,price:c.price,qty:c.qty,total:c.price*c.qty});const p=await gO('products',c.pid);if(p){p.stock=Math.max(0,p.stock-c.qty);await pO('products',p)}await aO('invLog',{productId:c.pid,pn:c.name,type:'sale',qty:-c.qty,date:new Date().toISOString(),user:CU.name,ref:rn})}const ac=await gA('accounts'),ca=ac.find(a=>a.n==='Cash'),sa=ac.find(a=>a.n==='Sales Revenue');if(ca&&sa)await aO('journal',{date:new Date().toISOString(),desc:'Sale '+rn,lines:[{ai:ca.id,an:ca.n,dr:tot,cr:0},{ai:sa.id,an:sa.n,dr:0,cr:tot}],ref:rn,by:CU.name});cart=[];cM();toast('✅ Done!');shR({id:sid,rn,date:new Date().toISOString(),cashier:CU.name,customer:cu,subtotal:sub,tax:sub*tx/100,total:tot,pm});go('pos')}
-async function shR(sale){const se=await gA('settings'),s=se[0]||{},items=(await gA('saleItems')).filter(i=>i.saleId===sale.id);oM('🧾 Receipt','<div class="rcp" id="rc"><h2>'+(s.storeName||'Moswax Shop')+'</h2><div class="rc">'+(s.address||'')+' '+(s.phone||'')+'</div><div class="rl"></div><div>'+sale.rn+'</div><div>'+fD(sale.date)+'</div><div>'+sale.cashier+'</div>'+(sale.customer!=='Walk-in'?'<div>'+sale.customer+'</div>':'')+'<div class="rl"></div><table><tr><td><b>Item</b></td><td class="rr"><b>Qty</b></td><td class="rr"><b>Price</b></td><td class="rr"><b>Tot</b></td></tr>'+items.map(i=>'<tr><td>'+i.name+'</td><td class="rr">'+i.qty+'</td><td class="rr">'+fmt(i.price)+'</td><td class="rr">'+fmt(i.total)+'</td></tr>').join('')+'</table><div class="rl"></div><div style="display:flex;justify-content:space-between"><span>Sub</span><span>'+fmt(sale.subtotal)+'</span></div>'+(sale.tax>0?'<div style="display:flex;justify-content:space-between"><span>'+(s.taxName||'VAT')+'</span><span>'+fmt(sale.tax)+'</span></div>':'')+'<div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700"><span>TOTAL</span><span>'+fmt(sale.total)+'</span></div><div>'+sale.pm+'</div><div class="rl"></div><div class="rc">'+(s.footer||'Thank you!')+'</div></div><div style="text-align:center;margin-top:6px;display:flex;gap:4px;justify-content:center"><button class="bp" onclick="pR()">🖨️</button><button class="bo" onclick="sR()">📤</button><button class="bo" onclick="cM()">Close</button></div>')}
-function pR(){const c=document.getElementById('rc');if(!c)return;const w=window.open('','','width=280,height=500');w.document.write('<html><head><style>body{font-family:monospace;font-size:10px;padding:5px;max-width:250px;margin:0 auto}.rc{text-align:center}.rr{text-align:right}.rl{border-top:1px dashed #000;margin:3px 0}table{width:100%}td{padding:1px 0}h2{margin:0 0 3px;font-size:12px}</style></head><body>'+c.innerHTML+'</body></html>');w.document.close();w.print()}
-function sR(){const c=document.getElementById('rc');if(!c)return;if(navigator.share)navigator.share({title:'Receipt',text:c.innerText}).catch(()=>{});else{navigator.clipboard?.writeText(c.innerText);toast('Copied')}}
+async function rPOS(el){
+  const products=await gA('products');
+  const categories=await gA('categories');
+  const settings=await gA('settings');
+  const taxRate=Number(settings[0]?.taxRate||0);
+
+  el.innerHTML=`
+  <div class="pos">
+    <div style="display:flex;flex-direction:column;overflow:hidden">
+      <div class="psch">
+        <input id="ps" placeholder="Search or scan barcode..." oninput="fP()">
+        <select id="pc" onchange="fP()" style="width:90px">
+          <option value="">All</option>
+          ${categories.map(c=>`<option value="${c.id}">${c.name}</option>`).join('')}
+        </select>
+      </div>
+
+      <div class="pgr">
+        ${products.map(p=>`
+          <div class="pi ${p.stock<=0?'out':''}"
+               data-n="${String(p.name||'').toLowerCase()}"
+               data-b="${p.barcode||''}"
+               data-c="${p.catId||''}"
+               onclick="aC(${p.id})">
+            <div class="pn">${p.name}</div>
+            <div class="pp">${fmt(p.price)}</div>
+            <div class="ps">Stock: ${p.stock}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <div class="crt">
+      <div class="crt-h">
+        <span>Cart (${cart.length})</span>
+        <button class="bw sm" onclick="cart=[];uC()">Clear</button>
+      </div>
+
+      <div class="crt-i" id="ci">${rCI()}</div>
+
+      <div class="crt-f">
+        <div class="ctot">
+          <div><span>Subtotal</span><span id="cS">${fmt(cartSubtotal())}</span></div>
+          <div><span>VAT (${taxRate}%)</span><span id="cT">${fmt(cartTax(taxRate))}</span></div>
+          <div class="gt"><span>Total</span><span id="cTo">${fmt(cartTotal(taxRate))}</span></div>
+        </div>
+
+        <div class="cact">
+          <button class="bd" onclick="cart=[];uC()">Clear</button>
+          <button class="bs" onclick="oPay()" ${cart.length?'':'disabled'}>Pay</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function cartSubtotal(){
+  return cart.reduce((sum,item)=>sum+(Number(item.price||0)*Number(item.qty||0)),0);
+}
+
+function cartTax(taxRate){
+  return cartSubtotal()*Number(taxRate||0)/100;
+}
+
+function cartTotal(taxRate){
+  return cartSubtotal()+cartTax(taxRate);
+}
+
+function rCI(){
+  if(!cart.length){
+    return `<div style="text-align:center;padding:18px;color:var(--tx2)">Cart is empty</div>`;
+  }
+
+  return cart.map((item,index)=>`
+    <div class="cr">
+      <span class="cn">${item.name}</span>
+      <div class="cq">
+        <button onclick="cQ(${index},-1)">−</button>
+        <span>${item.qty}</span>
+        <button onclick="cQ(${index},1)">+</button>
+      </div>
+      <span class="ct">${fmt(item.price*item.qty)}</span>
+      <span class="cx" onclick="cart.splice(${index},1);uC()">✕</span>
+    </div>
+  `).join('');
+}
+
+async function aC(productId){
+  const product=await gO('products',productId);
+
+  if(!product){
+    toast('Product not found');
+    return;
+  }
+
+  if(Number(product.stock)<=0){
+    toast('Out of stock');
+    return;
+  }
+
+  const found=cart.find(x=>x.pid===productId);
+
+  if(found){
+    if(found.qty>=Number(product.stock)){
+      toast('Not enough stock');
+      return;
+    }
+    found.qty++;
+  }else{
+    cart.push({
+      pid:product.id,
+      name:product.name,
+      price:Number(product.price||0),
+      qty:1,
+      maxStock:Number(product.stock||0)
+    });
+  }
+
+  uC();
+}
+
+function cQ(index,change){
+  if(!cart[index]) return;
+
+  cart[index].qty+=change;
+
+  if(cart[index].qty<=0){
+    cart.splice(index,1);
+  }else if(cart[index].qty>cart[index].maxStock){
+    cart[index].qty=cart[index].maxStock;
+    toast('Maximum available stock reached');
+  }
+
+  uC();
+}
+
+async function uC(){
+  const cartBox=document.getElementById('ci');
+  if(!cartBox) return;
+
+  const settings=await gA('settings');
+  const taxRate=Number(settings[0]?.taxRate||0);
+
+  cartBox.innerHTML=rCI();
+
+  const sub=document.getElementById('cS');
+  const tax=document.getElementById('cT');
+  const total=document.getElementById('cTo');
+  const header=document.querySelector('.crt-h span');
+  const payButton=document.querySelector('.cact .bs');
+
+  if(sub) sub.textContent=fmt(cartSubtotal());
+  if(tax) tax.textContent=fmt(cartTax(taxRate));
+  if(total) total.textContent=fmt(cartTotal(taxRate));
+  if(header) header.textContent=`Cart (${cart.length})`;
+
+  if(payButton){
+    payButton.disabled=!cart.length;
+    payButton.style.opacity=cart.length?'1':'.45';
+  }
+}
+
+function fP(){
+  const query=(document.getElementById('ps')?.value||'').toLowerCase();
+  const category=document.getElementById('pc')?.value||'';
+
+  document.querySelectorAll('.pi').forEach(item=>{
+    const name=item.dataset.n||'';
+    const barcode=item.dataset.b||'';
+    const cat=item.dataset.c||'';
+
+    const found=name.includes(query)||barcode.includes(query);
+    const categoryOk=!category||cat===category;
+
+    item.style.display=(found&&categoryOk)?'':'none';
+  });
+}
+
+/* PAYMENT WINDOW */
+async function oPay(){
+  if(!cart.length){
+    toast('Add products first');
+    return;
+  }
+
+  const settings=await gA('settings');
+  const taxRate=Number(settings[0]?.taxRate||0);
+  const total=cartTotal(taxRate);
+
+  window.currentPaymentMethod='Cash';
+
+  oM(
+    'Payment',
+    `
+    <div style="text-align:center;margin-bottom:10px">
+      <div style="font-size:11px;color:var(--tx2)">Total to Pay</div>
+      <div style="font-size:26px;font-weight:800;color:var(--ac)">${fmt(total)}</div>
+    </div>
+
+    <div class="pms">
+      <div class="sel" onclick="sPM(this,'Cash')">
+        <div class="ic">💵</div><div class="lb">Cash</div>
+      </div>
+      <div onclick="sPM(this,'Card')">
+        <div class="ic">💳</div><div class="lb">Card</div>
+      </div>
+      <div onclick="sPM(this,'M-Pesa')">
+        <div class="ic">📱</div><div class="lb">M-Pesa</div>
+      </div>
+    </div>
+
+    <div id="cashPaymentBox">
+      <div class="f">
+        <label>Cash Received</label>
+        <input type="number" id="cashReceived" value="${total.toFixed(2)}"
+          oninput="showChange(${total})">
+      </div>
+      <div id="changeText" style="text-align:center;color:var(--gn);font-weight:700">
+        Change: ${fmt(0)}
+      </div>
+    </div>
+
+    <div class="f" style="margin-top:8px">
+      <label>Customer Name (optional)</label>
+      <input id="customerName" placeholder="Walk-in customer">
+    </div>
+    `,
+    `<button class="bs" style="width:100%;padding:11px" onclick="completePayment()">Complete Sale</button>`
+  );
+}
+
+function sPM(element,method){
+  document.querySelectorAll('.pms div').forEach(x=>x.classList.remove('sel'));
+  element.classList.add('sel');
+
+  window.currentPaymentMethod=method;
+
+  const cashBox=document.getElementById('cashPaymentBox');
+  if(cashBox){
+    cashBox.style.display=method==='Cash'?'block':'none';
+  }
+}
+
+function showChange(total){
+  const received=Number(document.getElementById('cashReceived')?.value||0);
+  const change=Math.max(0,received-total);
+
+  const output=document.getElementById('changeText');
+  if(output) output.textContent='Change: '+fmt(change);
+}
+
+/* COMPLETE PAYMENT */
+async function completePayment(){
+  try{
+    if(!cart.length){
+      toast('Cart is empty');
+      return;
+    }
+
+    const settings=await gA('settings');
+    const taxRate=Number(settings[0]?.taxRate||0);
+    const subtotal=cartSubtotal();
+    const tax=cartTax(taxRate);
+    const total=cartTotal(taxRate);
+
+    let method=window.currentPaymentMethod||'Cash';
+
+    if(method==='Cash'){
+      const received=Number(document.getElementById('cashReceived')?.value||0);
+      if(received<total){
+        toast('Cash received is less than total');
+        return;
+      }
+    }
+
+    const receiptNo='RCP-'+Date.now().toString(36).toUpperCase();
+    const customer=document.getElementById('customerName')?.value.trim()||'Walk-in';
+
+    const saleId=await aO('sales',{
+      rn:receiptNo,
+      date:new Date().toISOString(),
+      cashier:CU.name,
+      customer:customer,
+      subtotal:subtotal,
+      tax:tax,
+      total:total,
+      pm:method==='Card'?'Card (External)':method,
+      ic:cart.length
+    });
+
+    for(const item of cart){
+      await aO('saleItems',{
+        saleId:saleId,
+        productId:item.pid,
+        name:item.name,
+        price:item.price,
+        qty:item.qty,
+        total:item.price*item.qty
+      });
+
+      const product=await gO('products',item.pid);
+
+      if(product){
+        product.stock=Math.max(0,Number(product.stock)-Number(item.qty));
+        await pO('products',product);
+      }
+
+      await aO('invLog',{
+        productId:item.pid,
+        pn:item.name,
+        type:'sale',
+        qty:-item.qty,
+        date:new Date().toISOString(),
+        user:CU.name,
+        ref:receiptNo
+      });
+    }
+
+    cart=[];
+    cM();
+    toast('Sale completed');
+
+    go('pos');
+
+  }catch(error){
+    console.error(error);
+    toast('Payment error. Check app files.');
+  }
+}
