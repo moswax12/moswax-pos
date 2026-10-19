@@ -1,0 +1,46 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Moswax check</title>
+<style>body{font-family:sans-serif;background:#0f172a;color:#eee;padding:12px;font-size:14px}p{margin:8px 0}.ok{color:#22c55e}.bad{color:#ef4444}.tail{display:block;font-family:monospace;font-size:11px;color:#94a3b8;word-break:break-all}button{padding:10px 14px;margin:8px 0;font-size:14px}</style></head><body>
+<h2>Moswax POS checker</h2>
+<div id="out">Checking...</div>
+<button onclick="resetCache()">Reset app cache (keeps your data)</button>
+<script>
+var JS=['app.js','pos.js','inv.js','fin.js','usr.js','set.js'];
+var ALL=['index.html','manifest.json','sw.js'].concat(JS);
+var out=document.getElementById('out');
+function line(ok,text,tail){
+  var p=document.createElement('p');p.className=ok?'ok':'bad';
+  p.textContent=(ok?'✅ ':'❌ ')+text;
+  if(tail){var s=document.createElement('span');s.className='tail';s.textContent='ends with: '+tail;p.appendChild(s)}
+  out.appendChild(p);
+}
+async function run(){
+  out.textContent='';
+  var code={};
+  for(var i=0;i<ALL.length;i++){
+    var f=ALL[i];
+    try{
+      var r=await fetch(f+'?t='+Date.now(),{cache:'no-store'});
+      if(!r.ok){line(false,f+' - HTTP '+r.status+' (missing or misnamed)');continue}
+      var t=await r.text();code[f]=t;
+      var err='';
+      if(f.slice(-3)==='.js'){try{new Function(t)}catch(e){err=e.message}}
+      line(!err,f+' - '+t.length+' characters'+(err?' - SYNTAX ERROR: '+err:''),t.slice(-30).replace(/\s+/g,' '));
+    }catch(e){line(false,f+' - could not load: '+e.message)}
+  }
+  if(code['index.html']){
+    var h=code['index.html'];
+    var miss=JS.filter(function(j){return h.indexOf('src="'+j+'"')<0});
+    line(miss.length===0&&h.trim().slice(-7)==='</html>','index.html has all 6 scripts and ends with </html>'+(miss.length?' - missing: '+miss.join(', '):''));
+  }
+  var all=JS.map(function(j){return code[j]||''}).join('\n;\n');
+  try{new Function(all);line(true,'All scripts together: no name clashes')}catch(e){line(false,'Scripts together: '+e.message)}
+}
+async function resetCache(){
+  var rs=(await navigator.serviceWorker.getRegistrations())||[];
+  for(var i=0;i<rs.length;i++)await rs[i].unregister();
+  var ks=await caches.keys();
+  for(var j=0;j<ks.length;j++)await caches.delete(ks[j]);
+  alert('Done. Now open your app again while online.');
+}
+run();
+</script></body></html>
