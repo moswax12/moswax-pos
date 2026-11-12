@@ -255,8 +255,8 @@ async function cSa(){
     const taxAmt=r2(tot-sub);
     const sid=await aO('sales',{rn:rn,date:now,cashier:CU.name,customer:cu,subtotal:sub,tax:taxAmt,total:tot,pm:pmName,paid:paid,change:chg,ic:cart.length});
     for(const c of cart){
-      await aO('saleItems',{saleId:sid,productId:c.pid,name:c.name,price:c.price,qty:c.qty,total:r2(c.price*c.qty)});
-      const p=await gO('products',c.pid);
+           const p=await gO('products',c.pid);
+      await aO('saleItems',{saleId:sid,productId:c.pid,name:c.name,price:c.price,cost:r2(p?p.cost:0),qty:c.qty,total:r2(c.price*c.qty)});
       if(p){p.stock=Math.max(0,p.stock-c.qty);await pO('products',p)}
       await aO('invLog',{productId:c.pid,pn:c.name,type:'sale',qty:-c.qty,date:now,user:CU.name,ref:rn});
     }
